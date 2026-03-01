@@ -1,7 +1,7 @@
 #include "credentials.hpp"
 #include <iostream>
 
-std::ostream & vishnevskiy::print_credentials(std::ostream & print)
+std::ostream & vishnevskiy::out_credentials(std::ostream & out)
 {
-  return print<<"vishnevskiy.oleg";
+  return out << "vishnevskiy.oleg";
 }

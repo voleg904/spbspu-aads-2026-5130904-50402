@@ -3,5 +3,5 @@
 
 int main()
 {
-  vishnevskiy::print_credentials(std::cout) << "\n";
+  vishnevskiy::out_credentials(std::cout) << "\n";
 }

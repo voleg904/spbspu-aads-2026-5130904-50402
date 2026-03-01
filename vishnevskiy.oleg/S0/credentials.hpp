@@ -3,6 +3,6 @@
 #include <iosfwd>
 namespace vishnevskiy
 {
-  std::ostream & print_credentials(std::ostream & print);
+  std::ostream & out_credentials(std::ostream & out);
 }
 #endif
