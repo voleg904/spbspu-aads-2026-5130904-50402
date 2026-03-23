@@ -1,5 +1,7 @@
 #ifndef LISTTOOLS_HPP
 #define LISTTOOLS_HPP
+#include <cstddef>
+#include <string>
 
 namespace ListTools
 {
@@ -29,13 +31,13 @@ namespace ListTools
     public:
       NamedLIter();
       NamedLIter(NamedList<T>* h);
-      T* operator->();
+      List<T>* value();
       void operator++();
       std::string getName();
       void setData(NamedList<T>* h);
       bool hasNext();
       void end();
-      void insert(NamedLIter<T>* node, T& d);
+      void insert(List<T>* d, std::string name);
       void clear(NamedLIter* head);
   };
 
@@ -48,12 +50,12 @@ namespace ListTools
     public:
       LIter();
       LIter(List<T>* h);
-      T* operator->();
+      T* value();
       void operator++();
       void set(List<T>* h);
       bool hasNext();
       void end();
-      void insert(LIter<T>* node, T& d);
+      void insert(T& d);
       void clear(LIter* head);
   };
 
@@ -67,7 +69,7 @@ namespace ListTools
       LCIter();
       LCIter(const List<T>* h);
       void operator++();
-      void operator->();
+      T* value();
       bool hasNext();
   };
 }

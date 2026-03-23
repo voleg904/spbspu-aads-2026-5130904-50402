@@ -1,5 +1,7 @@
 #ifndef LISTIMPL_HPP
 #define LISTIMPL_HPP
+#include <cstddef>
+#include <string>
 #include "ListTools.hpp"
 
 namespace ListTools
@@ -15,7 +17,7 @@ namespace ListTools
   {}
 
   template <class T>
-  T* LIter<T>::operator->()
+  T* LIter<T>::value()
   {
     return (curr->val);
   }
@@ -32,9 +34,10 @@ namespace ListTools
     return curr -> next != nullptr;
   }
 
+  template <class T>
   void LIter<T>::set(List<T>* h)
   {
-    curr = List<T>* h;
+    curr = h;
   }
 
   template <class T>
@@ -44,22 +47,21 @@ namespace ListTools
     {
       this++;
     }
-    return *this;
   }
 
   template <class T>
-  void LIter::insert(LIter<T>* node, T& d)
+  void LIter<T>::insert(T& d)
   {
-    List<T>* s = new List<T>{d};
-    node -> curr -> next = s;
-    if (node -> curr -> next)
+    List<T>* s = new List<T>{d, nullptr};
+    curr -> next = s;
+    if (curr -> next)
     {
-      s -> next = node -> curr -> next 
+      s -> next = curr -> next;
     }
   }
   
   template <class T>
-  void LIter::clear(LIter<T>* head)
+  void LIter<T>::clear(LIter<T>* head)
   {
     LIter<T>* prev = nullptr;
     while (head -> curr)
@@ -81,11 +83,12 @@ namespace ListTools
   {}
 
   template <class T>
-  List<T>* NamedLIter<T>::operator->()
+  List<T>* NamedLIter<T>::value()
   {
     return curr -> data;
   }
 
+  template <class T>
   std::string NamedLIter<T>::getName()
   {
     return curr -> name;
@@ -103,36 +106,36 @@ namespace ListTools
     return curr -> next != nullptr;
   }
 
-  void NamedLIter<T>::setData(List<T>* h)
+  template <class T>
+  void NamedLIter<T>::setData(NamedList<T>* h)
   {
-    curr = List<T>* h;
+    curr = h;
   }
 
   template <class T>
-  void LIter<T>::end()
+  void NamedLIter<T>::end()
   {
     while (hasNext())
     {
       this++;
     }
-    return *this;
   }
 
   template <class T>
-  void LIter::insert(LIter<T>* node, T& d)
+  void NamedLIter<T>::insert(List<T>* d, std::string name)
   {
-    List<T>* s = new List<T>{d};
-    node -> curr -> next = s;
-    if (node -> curr -> next)
+    NamedList<T>* s = new NamedList<T>{name, d, nullptr};
+    curr -> next = s;
+    if (curr -> next)
     {
-      s -> next = node -> curr -> next 
+      s -> next = curr -> next;
     }
   }
   
   template <class T>
-  void LIter::clear(LIter<T>* head)
+  void NamedLIter<T>::clear(NamedLIter<T>* head)
   {
-    LIter<T>* prev = nullptr;
+    NamedLIter<T>* prev = nullptr;
     while (head -> curr)
     {
       prev = head;
@@ -142,12 +145,12 @@ namespace ListTools
   }
 
   template <class T>
-  LCIter<T>::LCIter(): 
+  LCIter<T>::LCIter():
     curr(nullptr)
   {}
 
   template <class T>
-  LCIter<T>::LCIter(List<T>* h): 
+  LCIter<T>::LCIter(const List<T>* h):
     curr(h)
   {}
 
@@ -155,6 +158,12 @@ namespace ListTools
   void LCIter<T>::operator++()
   {
     curr = curr -> next;
+  }
+
+  template <class T>
+  T* LCIter<T>::value()
+  {
+    return (curr->val);
   }
 
   template <class T>
