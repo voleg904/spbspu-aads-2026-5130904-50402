@@ -32,8 +32,84 @@ namespace ListTools
     return curr -> next != nullptr;
   }
 
+  void LIter<T>::set(List<T>* h)
+  {
+    curr = List<T>* h;
+  }
+
   template <class T>
-  void LIter::end()
+  void LIter<T>::end()
+  {
+    while (hasNext())
+    {
+      this++;
+    }
+    return *this;
+  }
+
+  template <class T>
+  void LIter::insert(LIter<T>* node, T& d)
+  {
+    List<T>* s = new List<T>{d};
+    node -> curr -> next = s;
+    if (node -> curr -> next)
+    {
+      s -> next = node -> curr -> next 
+    }
+  }
+  
+  template <class T>
+  void LIter::clear(LIter<T>* head)
+  {
+    LIter<T>* prev = nullptr;
+    while (head -> curr)
+    {
+      prev = head;
+      head.curr = head.curr -> next;
+      delete prev;
+    }
+  }
+
+  template <class T>
+  NamedLIter<T>::NamedLIter(): 
+    curr(nullptr)
+  {}
+
+  template <class T>
+  NamedLIter<T>::NamedLIter(NamedList<T>* h): 
+    curr(h)
+  {}
+
+  template <class T>
+  List<T>* NamedLIter<T>::operator->()
+  {
+    return curr -> data;
+  }
+
+  std::string NamedLIter<T>::getName()
+  {
+    return curr -> name;
+  }
+
+  template <class T>
+  void NamedLIter<T>::operator++()
+  {
+    curr = curr -> next;
+  }
+
+  template <class T>
+  bool NamedLIter<T>::hasNext()
+  {
+    return curr -> next != nullptr;
+  }
+
+  void NamedLIter<T>::setData(List<T>* h)
+  {
+    curr = List<T>* h;
+  }
+
+  template <class T>
+  void LIter<T>::end()
   {
     while (hasNext())
     {

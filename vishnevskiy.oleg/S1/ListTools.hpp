@@ -11,6 +11,33 @@ namespace ListTools
       List<T>* next;
   };
 
+  template <class T>
+  class NamedList
+  {
+    private:
+      std::string name;
+      NamedList<T>* next;
+      List<T>* data;
+  };
+
+  template <class T>
+  class NamedLIter
+  {
+    friend class NamedList<T>;
+    private:
+      NamedList<T>* curr;
+    public:
+      NamedLIter();
+      NamedLIter(NamedList<T>* h);
+      T* operator->();
+      void operator++();
+      std::string getName();
+      void setData(NamedList<T>* h);
+      bool hasNext();
+      void end();
+      void insert(NamedLIter<T>* node, T& d);
+      void clear(NamedLIter* head);
+  };
 
   template <class T>
   class LIter
@@ -23,13 +50,13 @@ namespace ListTools
       LIter(List<T>* h);
       T* operator->();
       void operator++();
+      void set(List<T>* h);
       bool hasNext();
       void end();
       void insert(LIter<T>* node, T& d);
       void clear(LIter* head);
   };
 
-  
   template <class T>
   class LCIter
   {
@@ -39,8 +66,8 @@ namespace ListTools
     public:
       LCIter();
       LCIter(const List<T>* h);
-      LCIter& operator++();
-      T* operator->();
+      void operator++();
+      void operator->();
       bool hasNext();
   };
 }
