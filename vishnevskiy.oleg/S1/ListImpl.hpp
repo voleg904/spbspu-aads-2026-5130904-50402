@@ -93,10 +93,6 @@ namespace ListTools
     {
       curr = s;
     }
-    if (curr == curr -> next)
-    {
-      curr -> next = nullptr;
-    }
   }
   
   template <class T>
@@ -108,6 +104,17 @@ namespace ListTools
       prev = head;
       head.curr = head.curr -> next;
       delete prev;
+    }
+  }
+
+  template <class T>
+  template <class C>
+  void LIter<T>::traverse(C func)
+  {
+    while (curr)
+    {
+      func(this -> value());
+      ++this;
     }
   }
 
@@ -194,6 +201,17 @@ namespace ListTools
       prev = head;
       head.curr = head.curr -> next;
       delete prev;
+    }
+  }
+
+  template <class T>
+  template <class C>
+  void NamedLIter<T>::traverse(C func)
+  {
+    while (curr)
+    {
+      func(this -> value());
+      ++this;
     }
   }
 

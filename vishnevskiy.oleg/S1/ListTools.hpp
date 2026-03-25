@@ -49,6 +49,8 @@ namespace ListTools
       void end();
       void insert(List<T>* d, std::string name);
       void clear(NamedLIter* head);
+      template <class C>
+      void traverse(C func);
   };
 
   template <class T>
@@ -66,6 +68,8 @@ namespace ListTools
       void end();
       void insert(T& d);
       void clear(LIter* head);
+      template <class C>
+      void traverse(C func);
   };
 
   template <class T>
