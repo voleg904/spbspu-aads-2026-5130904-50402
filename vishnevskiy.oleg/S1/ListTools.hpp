@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <string>
 
-namespace ListTools
+namespace vishnevskiy
 {
   template <class T> class List;
   template <class T> class NamedList;
@@ -81,7 +81,7 @@ namespace ListTools
       LCIter();
       LCIter(const List<T>* h);
       void operator++();
-      T* value();
+      const T* value();
       bool hasNext();
   };
 }

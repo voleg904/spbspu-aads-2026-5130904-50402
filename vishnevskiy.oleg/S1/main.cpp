@@ -14,7 +14,7 @@ bool isNumber(std::string& str)
   return true;
 }
 
-bool hasDepth(ListTools::LIter<int> em, size_t depth)
+bool hasDepth(vishnevskiy::LIter<int> em, size_t depth)
 {
   size_t d = 0;
   while (em.curr)
@@ -29,7 +29,7 @@ bool hasDepth(ListTools::LIter<int> em, size_t depth)
   return false;
 }
 
-void printNames(ListTools::NamedLIter<int> lt)
+void printNames(vishnevskiy::NamedLIter<int> lt)
 {
   while (lt.hasNext())
   {
@@ -39,7 +39,7 @@ void printNames(ListTools::NamedLIter<int> lt)
   std::cout << lt.getName() << " ";
 }
 
-bool printEmbed(ListTools::LIter<int> em, size_t depth, int& sm)
+bool printEmbed(vishnevskiy::LIter<int> em, size_t depth, int& sm)
 {
   for (size_t i = 0; i < depth; i++)
   {
@@ -58,16 +58,16 @@ bool printEmbed(ListTools::LIter<int> em, size_t depth, int& sm)
   return false;
 }
 
-void printSeq(ListTools::NamedLIter<int> lt, size_t depth, int* sums, size_t index)
+void printSeq(vishnevskiy::NamedLIter<int> lt, size_t depth, int* sums, size_t index)
 {
   bool f = false;
   int sm = 0;
-  ListTools::NamedLIter<int> currIt = lt;
+  vishnevskiy::NamedLIter<int> currIt = lt;
   while (currIt.curr)
   {
     if (currIt.value())
     {
-      ListTools::LIter<int> temp(currIt.value());
+      vishnevskiy::LIter<int> temp(currIt.value());
       if (hasDepth(temp, depth))
       {
         f = printEmbed(temp, depth, sm);
@@ -85,9 +85,9 @@ void printSeq(ListTools::NamedLIter<int> lt, size_t depth, int* sums, size_t ind
 
 int main()
 {
-  ListTools::NamedList<int>* lhead = nullptr;
-  ListTools::NamedLIter<int> lIt(lhead);
-  ListTools::LIter<int> embedIt(nullptr);
+  vishnevskiy::NamedList<int>* lhead = nullptr;
+  vishnevskiy::NamedLIter<int> lIt(lhead);
+  vishnevskiy::LIter<int> embedIt(nullptr);
   std::string data;
   size_t lSize = 0;
   size_t cSize = 0;
@@ -98,13 +98,21 @@ int main()
       int number = std::stoi(data);
       if (!lIt.value())
       {
-        ListTools::List<int>* embed = new ListTools::List<int>{number, nullptr};
-        embedIt.set(embed);
+        try
+        {
+          vishnevskiy::List<int>* embed = new vishnevskiy::List<int>{number, nullptr};
+          embedIt.set(embed);
+        }
+        catch (const std::bad_alloc& e)
+        {
+          std::cerr << "Bad alloc\n";
+          
+          return 1;
+        }
         lIt.setData(embedIt.curr);
       }
       else
       {
-        //try
         embedIt.insert(number);
         ++embedIt;
       }
@@ -119,22 +127,42 @@ int main()
       cSize = 0;
       if (!lhead)
       {
-        //try
-        lhead = new ListTools::NamedList<int>{data, nullptr, nullptr};
+        lhead = new vishnevskiy::NamedList<int>{data, nullptr, nullptr};
         lIt.setCurr(lhead);
       }
       else
       {
-        //try
         lIt.insert(nullptr, data);
         ++lIt;
       }
     }
   }
 
-  //try
-  int* sums = new int[lSize];
+  if (!lhead)
+  {
+    std::cout << 0 << "\n";
+    return 2;
+  }
+
   lIt.setCurr(lhead);
+  int* sums = nullptr;
+  try
+  {
+    int* sums = new int[lSize];
+  }
+  catch (const std::bad_alloc& e)
+  {
+    std::cerr << "Bad alloc\n";
+    while (lIt.curr)
+    {
+      embedIt.set(lIt.value());
+      embedIt.clear(&embedIt);
+    }
+    ++lIt;
+    lIt.setCurr(lhead);
+    lIt.clear(&lIt);
+    return 1;
+  }
   printNames(lIt);
   std::cout << "\n";
   printSeq(lIt, 0, sums, 0);
@@ -144,4 +172,14 @@ int main()
   }
   std::cout << "\n";
   delete[] sums;
+  lIt.setCurr(lhead);
+  while (lIt.curr)
+  {
+    embedIt.set(lIt.value());
+    embedIt.clear(&embedIt);
+  }
+  ++lIt;
+  lIt.setCurr(lhead);
+  lIt.clear(&lIt);
+  return 0;
 }

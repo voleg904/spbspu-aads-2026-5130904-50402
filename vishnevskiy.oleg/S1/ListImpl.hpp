@@ -5,7 +5,7 @@
 #include <iostream>
 #include "ListTools.hpp"
 
-namespace ListTools
+namespace vishnevskiy
 {
   template <class T>
   List<T>::List():
@@ -76,7 +76,7 @@ namespace ListTools
   {
     while (hasNext())
     {
-      ++this;
+      ++curr;
     }
   }
 
@@ -102,7 +102,7 @@ namespace ListTools
     while (head -> curr)
     {
       prev = head;
-      head.curr = head.curr -> next;
+      head -> curr = head -> curr -> next;
       delete prev;
     }
   }
@@ -114,7 +114,7 @@ namespace ListTools
     while (curr)
     {
       func(this -> value());
-      ++this;
+      ++curr;
     }
   }
 
@@ -199,7 +199,7 @@ namespace ListTools
     while (head -> curr)
     {
       prev = head;
-      head.curr = head.curr -> next;
+      head -> curr = head -> curr -> next;
       delete prev;
     }
   }
@@ -232,7 +232,7 @@ namespace ListTools
   }
 
   template <class T>
-  T* LCIter<T>::value()
+  const T* LCIter<T>::value()
   {
     return *(curr->val);
   }
