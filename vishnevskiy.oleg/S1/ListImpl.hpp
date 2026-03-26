@@ -105,7 +105,7 @@ namespace vishnevskiy
       delete c;
       c = next;
     }
-    delete head;
+    head -> curr = nullptr;
   }
 
   template <class T>
@@ -203,7 +203,7 @@ namespace vishnevskiy
       delete c;
       c = next;
     }
-    delete head;
+    head -> curr = nullptr;
   }
 
   template <class T>
