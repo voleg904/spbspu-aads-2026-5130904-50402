@@ -181,6 +181,11 @@ int main()
   }
   printNames(lIt);
   std::cout << "\n";
+  if (!embedIt.curr)
+  {
+    std::cout << 0 << "\n";
+    return 0;
+  }
   printSeq(lIt, 0, sums, 0);
   for (size_t i = 0; i < lSize; i++)
   {
