@@ -36,7 +36,7 @@ void printNames(vishnevskiy::NamedLIter<int> lt)
     std::cout << lt.getName() << " ";
     ++lt;
   }
-  std::cout << lt.getName() << " ";
+  std::cout << lt.getName();
 }
 
 bool printEmbed(vishnevskiy::LIter<int> em, size_t depth, int& sm)
@@ -95,7 +95,14 @@ int main()
   {
     if (isNumber(data))
     {
-      int number = std::stoi(data);
+      try{
+        int number = std::stoi(data);
+      }
+      catch (const std::out_of_range& e)
+      {
+        std::cerr << "Overflow error\n";
+        return 1;
+      }
       if (!lIt.value())
       {
         try
@@ -141,7 +148,7 @@ int main()
   if (!lhead)
   {
     std::cout << 0 << "\n";
-    return 2;
+    return 0;
   }
 
   lIt.setCurr(lhead);
@@ -177,8 +184,8 @@ int main()
   {
     embedIt.set(lIt.value());
     embedIt.clear(&embedIt);
+    ++lIt;
   }
-  ++lIt;
   lIt.setCurr(lhead);
   lIt.clear(&lIt);
   return 0;
