@@ -200,6 +200,7 @@ int main()
   {
     std::cout << 0 << "\n";
     cleanup(lIt, embedIt, lhead);
+    delete[] sums;
     return 0;
   }
   printSeq(lIt, 0, sums, 0);
