@@ -98,13 +98,14 @@ namespace vishnevskiy
   template <class T>
   void LIter<T>::clear(LIter<T>* head)
   {
-    LIter<T>* prev = nullptr;
-    while (head -> curr)
+    List<T>* c = head -> curr;
+    while (c)
     {
-      prev = head;
-      head -> curr = head -> curr -> next;
-      delete prev -> curr;
+      List<T>* next = c -> next;
+      delete c;
+      c = next;
     }
+    delete head;
   }
 
   template <class T>
@@ -195,13 +196,14 @@ namespace vishnevskiy
   template <class T>
   void NamedLIter<T>::clear(NamedLIter<T>* head)
   {
-    NamedLIter<T>* prev = nullptr;
-    while (head -> curr)
+    NamedList<T>* c = head -> curr;
+    while (c)
     {
-      prev = head;
-      head -> curr = head -> curr -> next;
-      delete prev -> curr;
+      NamedList<T>* next = c -> next;
+      delete c;
+      c = next;
     }
+    delete head;
   }
 
   template <class T>
