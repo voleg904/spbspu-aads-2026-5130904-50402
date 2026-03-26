@@ -26,7 +26,6 @@ void printNames(vishnevskiy::NamedLIter<int> lt)
     std::cout << lt.getName() << " ";
     ++lt;
   }
-  std::cout << lt.getName();
 }
 
 bool printEmbed(vishnevskiy::LIter<int> em, size_t depth, int& sm)
