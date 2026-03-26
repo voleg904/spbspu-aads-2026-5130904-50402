@@ -99,7 +99,7 @@ int main()
   std::string name;
   size_t lSize = 0;
   size_t cSize = 0;
-  
+
   while (std::cin)
   {
     std::cin >> std::ws;
