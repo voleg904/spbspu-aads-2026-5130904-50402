@@ -104,15 +104,12 @@ int main()
   std::string name;
   size_t lSize = 0;
   size_t cSize = 0;
-  //int maxV = std::numeric_limits<int>::max();
-  //int minV = std::numeric_limits<int>::min();
   while (std::cin)
   {
     std::cin >> std::ws;
     int c = std::cin.peek();
     if (std::isdigit(c))
     {
-      //long long buffer = 0;
       int number = 0;
       std::cin >> number;
       if (std::cin.fail())
