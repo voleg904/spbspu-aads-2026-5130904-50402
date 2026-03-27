@@ -100,7 +100,6 @@ int main()
   std::string name;
   size_t lSize = 0;
   size_t cSize = 0;
-  bool overflow = false;
   while (std::cin)
   {
     std::cin >> std::ws;
@@ -111,11 +110,17 @@ int main()
       {
         int number = 0;
         std::cin >> number;
-        if (std::cin.fail())
+        try
         {
-          std::cerr << "Overflow error\n";
-          std::cin.clear();
-          overflow = true;
+          if (std::cin.fail())
+          {
+            throw std::overflow_error("Overflow\n");
+          }
+        }
+        catch (const std::overflow_error& e)
+        {
+          cleanup(lIt, embedIt, lhead);
+          return 1;
         }
         if (!lIt.value())
         {
@@ -168,11 +173,6 @@ int main()
         }
       }
     }
-  }
-  if (overflow)
-  {
-    cleanup(lIt, embedIt, lhead);
-    return 1;
   }
 
   if (!lhead)
