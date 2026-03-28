@@ -210,6 +210,8 @@ int main()
   if (overflow_sum)
   {
     std::cerr << "Overflow\n";
+    cleanup(lIt, embedIt, lhead);
+    delete[] sums;
     return 1;
   }
   for (size_t i = 0; i < lSize; i++)
