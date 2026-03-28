@@ -5,7 +5,7 @@
 #include <cctype>
 #include <limits>
 
-bool hasDepth(vishnevskiy::LIter<int> em, size_t depth)
+bool hasDepth(vishnevskiy::LIter<size_t> em, size_t depth)
 {
   size_t d = 0;
   while (em.curr)
@@ -20,7 +20,7 @@ bool hasDepth(vishnevskiy::LIter<int> em, size_t depth)
   return false;
 }
 
-void printNames(vishnevskiy::NamedLIter<int> lt)
+void printNames(vishnevskiy::NamedLIter<size_t> lt)
 {
   while (lt.hasNext())
   {
@@ -30,7 +30,7 @@ void printNames(vishnevskiy::NamedLIter<int> lt)
   std::cout << lt.getName();
 }
 
-bool printEmbed(vishnevskiy::LIter<int> em, size_t depth, int& sm)
+bool printEmbed(vishnevskiy::LIter<size_t> em, size_t depth, size_t& sm, bool& overflow)
 {
   for (size_t i = 0; i < depth; i++)
   {
@@ -43,22 +43,29 @@ bool printEmbed(vishnevskiy::LIter<int> em, size_t depth, int& sm)
   if (em.curr)
   {
     std::cout << em.value();
-    sm += em.value();
+    if (em.value() > std::numeric_limits<size_t>::max() - sm)
+    {
+      overflow = true;
+    }
+    if (!overflow)
+    {
+      sm += em.value();
+    }
     return true;
   }
   return false;
 }
 
-void printSeq(vishnevskiy::NamedLIter<int> lt, size_t depth, int* sums, size_t index)
+void printSeq(vishnevskiy::NamedLIter<size_t> lt, size_t depth, size_t* sums, size_t index, bool& overflow)
 {
   bool f = false;
-  int sm = 0;
-  vishnevskiy::NamedLIter<int> currIt = lt;
+  size_t sm = 0;
+  vishnevskiy::NamedLIter<size_t> currIt = lt;
   while (currIt.curr)
   {
     if (currIt.value())
     {
-      vishnevskiy::LIter<int> temp(currIt.value());
+      vishnevskiy::LIter<size_t> temp(currIt.value());
       if (hasDepth(temp, depth))
       {
         if (f)
@@ -66,7 +73,7 @@ void printSeq(vishnevskiy::NamedLIter<int> lt, size_t depth, int* sums, size_t i
           std::cout << " ";
         }
 
-        f = printEmbed(temp, depth, sm);
+        f = printEmbed(temp, depth, sm, overflow);
       }
     }
     ++currIt;
@@ -75,11 +82,11 @@ void printSeq(vishnevskiy::NamedLIter<int> lt, size_t depth, int* sums, size_t i
   {
     std::cout << "\n";
     sums[index] = sm;
-    printSeq(lt, depth+1, sums, index+1);
+    printSeq(lt, depth+1, sums, index+1, overflow);
   }
 }
 
-void cleanup(vishnevskiy::NamedLIter<int>& lt, vishnevskiy::LIter<int>& em, vishnevskiy::NamedList<int>* h)
+void cleanup(vishnevskiy::NamedLIter<size_t>& lt, vishnevskiy::LIter<size_t>& em, vishnevskiy::NamedList<size_t>* h)
 {
   lt.setCurr(h);
   while (lt.curr)
@@ -94,13 +101,13 @@ void cleanup(vishnevskiy::NamedLIter<int>& lt, vishnevskiy::LIter<int>& em, vish
 
 int main()
 {
-  vishnevskiy::NamedList<int>* lhead = nullptr;
-  vishnevskiy::NamedLIter<int> lIt(lhead);
-  vishnevskiy::LIter<int> embedIt(nullptr);
+  vishnevskiy::NamedList<size_t>* lhead = nullptr;
+  vishnevskiy::NamedLIter<size_t> lIt(lhead);
+  vishnevskiy::LIter<size_t> embedIt(nullptr);
   std::string name;
   size_t lSize = 0;
   size_t cSize = 0;
-  bool overflow = false;
+  bool overflow = false, overflow_sum = false;
   while (std::cin)
   {
     std::cin >> std::ws;
@@ -109,7 +116,7 @@ int main()
     {
       if (std::isdigit(c))
       {
-        int number = 0;
+        size_t number = 0;
         std::cin >> number;
         if (std::cin.fail())
         {
@@ -122,7 +129,7 @@ int main()
         {
           try
           {
-            vishnevskiy::List<int>* embed = new vishnevskiy::List<int>{number, nullptr};
+            vishnevskiy::List<size_t>* embed = new vishnevskiy::List<size_t>{number, nullptr};
             embedIt.set(embed);
           }
           catch (const std::bad_alloc& e)
@@ -152,7 +159,7 @@ int main()
         {
           try
           {
-            lhead = new vishnevskiy::NamedList<int>{name, nullptr, nullptr};
+            lhead = new vishnevskiy::NamedList<size_t>{name, nullptr, nullptr};
           }
           catch (const std::bad_alloc& e)
           {
@@ -178,10 +185,10 @@ int main()
   }
 
   lIt.setCurr(lhead);
-  int* sums = nullptr;
+  size_t* sums = nullptr;
   try
   {
-    sums = new int[lSize];
+    sums = new size_t[lSize];
   }
   catch (const std::bad_alloc& e)
   {
@@ -199,7 +206,12 @@ int main()
     delete[] sums;
     return 0;
   }
-  printSeq(lIt, 0, sums, 0);
+  printSeq(lIt, 0, sums, 0, overflow_sum);
+  if (overflow_sum)
+  {
+    std::cerr << "Overflow\n";
+    return 1;
+  }
   for (size_t i = 0; i < lSize; i++)
   {
     std::cout << sums[i];
