@@ -2,7 +2,7 @@
 #define STACK_HPP
 #include "ListImpl.hpp"
 
-namespace vishnevskiy
+namespace Tools
 {
   template <class T>
   class Stack
@@ -10,8 +10,10 @@ namespace vishnevskiy
     public:
       void push(T rhs);
       T drop();
+      Stack();
+      ~Stack();
     private:
-      LIter<T> fake;
+      LIter<T>* fake;
   };
 }
 
