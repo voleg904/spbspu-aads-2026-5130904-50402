@@ -37,6 +37,18 @@ namespace Tools
     delete temp.curr;
     return tempVal;
   }
+
+  template <class T>
+  T Stack<T>::seeTop()
+  {
+    return fake -> curr -> next -> val;
+  }
+
+  template <class T>
+  bool Stack<T>::isEmpty() const
+  {
+    return fake -> curr -> next == nullptr;
+  }
 }
 
 #endif

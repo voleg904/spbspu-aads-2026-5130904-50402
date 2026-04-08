@@ -10,6 +10,8 @@ namespace Tools
     public:
       void push(T rhs);
       T drop();
+      bool isEmpty() const;
+      T seeTop();
       Stack();
       ~Stack();
     private:

@@ -49,6 +49,18 @@ namespace Tools
     delete temp.curr;
     return tempVal;
   }
+
+  template <class T>
+  T Queue<T>::seeTop()
+  {
+    return last -> value();
+  }
+
+  template <class T>
+  bool Queue<T>::isEmpty() const
+  {
+    return fake -> curr -> next == nullptr;
+  }
 }
 
 #endif
