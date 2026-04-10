@@ -2,7 +2,7 @@
 #define QUEUEIMPL_HPP
 #include "Queue.hpp"
 
-namespace Tools
+namespace vishnevskiy
 {
   template <class T>
   Queue<T>::Queue():

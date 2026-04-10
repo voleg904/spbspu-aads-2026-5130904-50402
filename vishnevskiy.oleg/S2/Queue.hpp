@@ -2,7 +2,7 @@
 #define QUEUE_HPP
 #include "ListImpl.hpp"
 
-namespace Tools
+namespace vishnevskiy
 {
   template <class T>
   class Queue

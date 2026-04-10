@@ -47,11 +47,11 @@ bool isOp(std::string op)
 
 int main()
 {
-  Tools::Queue<std::pair<int, std::string>>* q = new Tools::Queue<std::pair<int, std::string>>();
-  Tools::Stack<std::pair<int, std::string>>* s = nullptr;
+  vishnevskiy::Queue<std::pair<int, std::string>>* q = new vishnevskiy::Queue<std::pair<int, std::string>>();
+  vishnevskiy::Stack<std::pair<int, std::string>>* s = nullptr;
   try
   {
-    s = new Tools::Stack<std::pair<int, std::string>>();
+    s = new vishnevskiy::Stack<std::pair<int, std::string>>();
   }
   catch (const std::bad_alloc& e)
   {

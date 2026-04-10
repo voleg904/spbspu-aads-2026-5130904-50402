@@ -2,7 +2,7 @@
 #define STACKIMPL_HPP
 #include "Stack.hpp"
 
-namespace Tools
+namespace vishnevskiy
 {
   template <class T>
   Stack<T>::Stack():
