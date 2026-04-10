@@ -47,7 +47,7 @@ bool isOp(std::string op)
 
 int main()
 {
-  vishnevskiy::Queue<std::pair<size_t, std::string>>* q = new vishnevskiy::Queue<std::pair<int, std::string>>();
+  vishnevskiy::Queue<std::pair<size_t, std::string>>* q = new vishnevskiy::Queue<std::pair<size_t, std::string>>();
   vishnevskiy::Stack<std::pair<size_t, std::string>>* s = nullptr;
   try
   {
