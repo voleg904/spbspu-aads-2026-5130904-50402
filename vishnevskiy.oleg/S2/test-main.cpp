@@ -5,26 +5,26 @@
 
 BOOST_AUTO_TEST_CASE(queue_test_empty)
 {
-  Tools::Queue<int> t;
+  vishnevskiy::Queue<int> t;
   BOOST_CHECK_THROW(t.drop(), std::runtime_error);
 }
 
 BOOST_AUTO_TEST_CASE(stack_test_empty)
 {
-  Tools::Stack<int> t;
+  vishnevskiy::Stack<int> t;
   BOOST_CHECK_THROW(t.drop(), std::runtime_error);
 }
 
 BOOST_AUTO_TEST_CASE(stack_test_push)
 {
-  Tools::Stack<int> t;
+  vishnevskiy::Stack<int> t;
   t.push(6);
   BOOST_TEST(t.drop() == 6);
 }
 
 BOOST_AUTO_TEST_CASE(queue_test_push)
 {
-  Tools::Queue<int> t;
+  vishnevskiy::Queue<int> t;
   t.push(6);
   BOOST_TEST(t.drop() == 6);
 }
