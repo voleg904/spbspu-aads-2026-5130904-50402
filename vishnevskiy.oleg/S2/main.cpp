@@ -64,7 +64,7 @@ int main()
   while (std::cin)
   {
     std::cin >> std::ws;
-    size_t c = std::cin.peek();
+    int c = std::cin.peek();
     if (c != EOF)
     {
       if (std::isdigit(c))
