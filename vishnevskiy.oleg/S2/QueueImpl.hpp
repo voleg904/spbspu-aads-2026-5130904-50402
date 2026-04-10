@@ -26,7 +26,7 @@ namespace Tools
     else
     {
       LIter<T> temp = *fake;
-      temp.end(); 
+      temp.end();
       temp.insert(rhs);
     }
   }

@@ -165,7 +165,7 @@ int main()
         else
         {
           std::cerr << "Unknown operator!" << "\n";
-          return 1; 
+          return 1;
         }
       }
     }
