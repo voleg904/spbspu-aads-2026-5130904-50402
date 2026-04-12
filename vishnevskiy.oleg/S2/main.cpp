@@ -1,8 +1,9 @@
 #include <iostream>
 #include "QueueImpl.hpp"
 #include "StackImpl.hpp"
+#include <limits>
 
-size_t getPriority(std::string op)
+long long getPriority(std::string op)
 {
   if (op == "+" || op == "-")
   {
@@ -15,7 +16,7 @@ size_t getPriority(std::string op)
   return 0;
 }
 
-size_t performOp(size_t n1, size_t n2, std::string op)
+long long performOp(long long n1, long long n2, std::string op)
 {
   if (op == "+")
   {
@@ -45,13 +46,51 @@ bool isOp(std::string op)
   return false;
 }
 
+bool hasOverflow(long long n1, long long n2, std::string op)
+{
+  long long mx = std::numeric_limits<long long>::max();
+  long long mn = std::numeric_limits<long long>::lowest();
+  if (op == "+")
+  {
+    if ((n2 > 0 && n1 > mx - n2) || (n2 < 0 && n1 < mn - n2))
+    {
+      return true;
+    }
+    return false;
+  }
+  if (op == "-")
+  {
+    if ((n2 > 0 && n1 < mn + n2) || (n2 < 0 && n1 > mx + n2))
+    {
+      return true;
+    }
+    return false;
+  }
+  if (op == "*")
+  {
+    if (n1 == 0 || n2 == 0)
+    {
+      return false;
+    }
+    if ((n1 > 0 && n2 > 0 && n1 > mx / n2) || (n1 > 0 && n2 < 0 && n2 < mn / n1) || (n1 < 0 && n2 > 0 && n1 < mn / n2) || (n1 < 0 && n2 < 0 && -n1 > mx / -n2))
+    {
+      return true;
+    }
+    return false;
+  }
+  else
+  {
+    return false;
+  }
+}
+
 int main()
 {
-  vishnevskiy::Queue<std::pair<size_t, std::string>>* q = new vishnevskiy::Queue<std::pair<size_t, std::string>>();
-  vishnevskiy::Stack<std::pair<size_t, std::string>>* s = nullptr;
+  vishnevskiy::Queue<std::pair<long long, std::string>>* q = new vishnevskiy::Queue<std::pair<long long, std::string>>();
+  vishnevskiy::Stack<std::pair<long long, std::string>>* s = nullptr;
   try
   {
-    s = new vishnevskiy::Stack<std::pair<size_t, std::string>>();
+    s = new vishnevskiy::Stack<std::pair<long long, std::string>>();
   }
   catch (const std::bad_alloc& e)
   {
@@ -60,7 +99,7 @@ int main()
     return 1;
   }
   std::string op;
-  size_t num = 0;
+  long long num = 0;
   while (std::cin)
   {
     std::cin >> std::ws;
@@ -70,6 +109,13 @@ int main()
       if (std::isdigit(c))
       {
         std::cin >> num;
+        if (std::cin.fail())
+        {
+          std::cerr << "Overflow!" << "\n";
+          delete q;
+          delete s;
+          return 2;
+        }
         try
         {
           q -> push({num, ""});
@@ -117,7 +163,7 @@ int main()
           }
           else
           {
-            size_t pr = getPriority(op);
+            long long pr = getPriority(op);
             while (!s -> isEmpty() && pr <= getPriority(s -> seeTop().second) && s -> seeTop().second != "(")
             {
               try
@@ -183,6 +229,7 @@ int main()
       return 1;
     }
   }
+
   while (!q -> isEmpty())
   {
     if (q -> seeTop().second == "")
@@ -202,18 +249,28 @@ int main()
     else
     {
       std::string op = q -> drop().second;
-      size_t num2 = s -> drop().first;
-      size_t num1 = s -> drop().first;
-      try
+      long long num2 = s -> drop().first;
+      long long num1 = s -> drop().first;
+      if (!hasOverflow(num1, num2, op))
       {
-        s -> push({performOp(num1, num2, op), ""});
+        try
+        {
+          s -> push({performOp(num1, num2, op), ""});
+        }
+        catch (const std::bad_alloc& e)
+        {
+          std::cerr << "Bad alloc!" << "\n";
+          delete q;
+          delete s;
+          return 1;
+        }
       }
-      catch (const std::bad_alloc& e)
+      else
       {
-        std::cerr << "Bad alloc!" << "\n";
+        std::cerr << "Overflow!" << "\n";
         delete q;
         delete s;
-        return 1;
+        return 2;
       }
     }
   }
