@@ -32,7 +32,7 @@ long long performOp(long long n1, long long n2, std::string op)
   }
   if (op == "%")
   {
-    if ((n1 % n2) > 0)
+    if ((n1 % n2) >= 0)
     {
       return n1 % n2;
     }
@@ -92,7 +92,7 @@ bool hasOverflow(long long n1, long long n2, std::string op)
   }
 }
 
-int main()
+int process(std::istream& in, long long& out)
 {
   vishnevskiy::Queue<std::pair<long long, std::string>>* q = new vishnevskiy::Queue<std::pair<long long, std::string>>();
   vishnevskiy::Stack<std::pair<long long, std::string>>* s = nullptr;
@@ -108,16 +108,23 @@ int main()
   }
   std::string op;
   long long num = 0;
-  while (std::cin)
+  in >> std::ws;
+  if (in.peek() == EOF)
   {
-    std::cin >> std::ws;
-    int c = std::cin.peek();
-    if (c != EOF)
+    delete q;
+    delete s;
+    return 3;
+  }
+  while (in && in.peek() != '\n')
+  {
+    in >> std::ws;
+    int c = in.peek();
+    if (c != EOF && in.peek() != '\n')
     {
       if (std::isdigit(c))
       {
-        std::cin >> num;
-        if (std::cin.fail())
+        in >> num;
+        if (in.fail())
         {
           std::cerr << "Overflow!" << "\n";
           delete q;
@@ -138,7 +145,7 @@ int main()
       }
       else
       {
-        std::cin >> op;
+        in >> op;
         if (isOp(op))
         {
           if (s -> isEmpty() || s -> seeTop().second == "(")
@@ -298,9 +305,44 @@ int main()
   }
   if (!s -> isEmpty())
   {
-    std::cout << s -> drop().first << "\n";
+    out = s -> drop().first;
   }
   delete q;
   delete s;
+  return 0;
+}
+
+int main(int argc, char* argv[])
+{
+  int r = 0;
+  long long val = 0;
+  vishnevskiy::Queue<long long>* res = new vishnevskiy::Queue<long long>();
+  while (std::cin.peek() != EOF && r == 0)
+  {
+    try
+    {
+      r = process(std::cin, val);
+      if (r == 0)
+      {
+        res -> push(val);
+      }
+    }
+    catch (const std::bad_alloc& e)
+    {
+      std::cerr << "Bad alloc!" << "\n";
+      delete res;
+      return 1;
+    }
+  }
+  while (!res -> isEmpty())
+  {
+    std::cout << res -> drop();
+    if (!res -> isEmpty())
+    {
+      std::cout << " ";
+    }
+  }
+  std::cout << "\n";
+  delete res;
   return 0;
 }
