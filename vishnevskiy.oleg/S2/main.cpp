@@ -312,7 +312,7 @@ int process(std::istream& in, long long& out)
   return 0;
 }
 
-int main(int argc, char* argv[])
+int main()
 {
   int r = 0;
   long long val = 0;
