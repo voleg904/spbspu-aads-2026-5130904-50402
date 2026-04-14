@@ -93,7 +93,7 @@ bool hasOverflow(long long n1, long long n2, std::string op)
   }
 }
 
-int process(std::istream& in, long long& out)
+int process(std::istream* in, long long& out)
 {
   vishnevskiy::Queue<std::pair<long long, std::string>>* q = new vishnevskiy::Queue<std::pair<long long, std::string>>();
   vishnevskiy::Stack<std::pair<long long, std::string>>* s = nullptr;
@@ -109,23 +109,23 @@ int process(std::istream& in, long long& out)
   }
   std::string op;
   long long num = 0;
-  in >> std::ws;
-  if (in.peek() == EOF)
+  (*in) >> std::ws;
+  if ((*in).peek() == EOF)
   {
     delete q;
     delete s;
     return 3;
   }
-  while (in && in.peek() != '\n')
+  while ((*in) && (*in).peek() != '\n')
   {
-    in >> std::ws;
-    int c = in.peek();
-    if (c != EOF && in.peek() != '\n')
+    *in >> std::ws;
+    int c = (*in).peek();
+    if (c != EOF && (*in).peek() != '\n')
     {
       if (std::isdigit(c))
       {
-        in >> num;
-        if (in.fail())
+        (*in) >> num;
+        if ((*in).fail())
         {
           std::cerr << "Overflow!" << "\n";
           delete q;
@@ -146,7 +146,7 @@ int process(std::istream& in, long long& out)
       }
       else
       {
-        in >> op;
+        (*in) >> op;
         if (isOp(op))
         {
           if (s -> isEmpty() || s -> seeTop().second == "(")
@@ -326,15 +326,16 @@ int main(int argc, char* argv[])
     if (!f)
     {
       std::cerr << "File not found" << "\n";
+      delete res;
       return 2;
     }
     in = &f;
   }
-  while (std::cin.peek() != EOF && r == 0)
+  while (in -> peek() != EOF && r == 0)
   {
     try
     {
-      r = process(std::cin, val);
+      r = process(in, val);
       if (r == 0)
       {
         res -> push(val);
