@@ -23,7 +23,7 @@ namespace vishnevskiy
       size_t findFree(const Key& key);
 
     public:
-      void add(Key k, Value v);
+      void add(Key& k, Value& v);
       Value drop(Key k);
       bool has(Key k);
       void rehash(size_t slots);

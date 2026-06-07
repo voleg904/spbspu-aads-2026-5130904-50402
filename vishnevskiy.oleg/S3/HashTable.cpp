@@ -70,26 +70,85 @@ namespace vishnevskiy
   }
 
   template <class Key, class Value, class Hash, class Equal>
-  void HashTable<Key, Value, Hash, Equal>::add(Key k, Value v)
+  void HashTable<Key, Value, Hash, Equal>::add(Key& k, Value& v)
   {
-    
+    size_t curr = findFree(k);
+
+    if (curr > cap)
+    {
+      throw std::runtime_error("Table is full");
+    }
+    if (flags[curr] == 1 && eq(keys[curr], k))
+    {
+      values[curr] = val;
+    }
+    else
+    {
+      keys[curr] = k;
+      values[curr] = v;
+      flags[curr] = 1;
+      size++;
+    }
   }
 
   template <class Key, class Value, class Hash, class Equal>
   Value HashTable<Key, Value, Hash, Equal>::drop(Key k)
   {
-    
+    size_t curr = findFree(k);
+
+    if (curr <= cap && flags[curr] == 1)
+    {
+      Value result = values[curr];
+      flags[curr] = 2;
+      size--;
+      return result;
+    }
+    throw std::runtime_error("Key does not exist");
   }
 
   template <class Key, class Value, class Hash, class Equal>
   bool HashTable<Key, Value, Hash, Equal>::has(Key k)
   {
-    
+    return findByKey(k) <= cap;
   }
 
   template <class Key, class Value, class Hash, class Equal>
   void HashTable<Key, Value, Hash, Equal>::rehash(size_t slots)
   {
-    
+    if (slots < size)
+    {
+      throw std::runtime_error("Not enough slots");
+    }
+
+    Key* keysCopy = keys;
+    Value* valuesCopy = values;
+    size_t* flagsCopy = flags;
+    size_t capCopy = cap;
+    keys = new Key[slots];
+    try
+    {
+      values = new Value[slots];
+      flags = new size_t[slots];
+    }
+    catch (const std::bad_alloc& e)
+    {
+      throw e;
+    }
+    size = 0;
+
+    for (size_t i = 0; i < cap; ++i)
+    {
+      flags[i] = 0;
+    }
+    for (size_t i = 0; i < capCopy; ++i)
+    {
+      if (flagsCopy[i] == 1)
+      {
+        add(keysCopy[i], valuesCopy[i]);
+      }
+    }
+    delete[] keysCopy;
+    delete[] valuesCopy;
+    delete[] flagsCopy;
   }
 }
