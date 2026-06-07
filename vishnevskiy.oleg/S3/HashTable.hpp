@@ -23,6 +23,8 @@ namespace vishnevskiy
       size_t findFree(const Key& key);
 
     public:
+      HashTable(size_t capacity);
+      ~HashTable();
       void add(Key& k, Value& v);
       Value drop(Key k);
       bool has(Key k);

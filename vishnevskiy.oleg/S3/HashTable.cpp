@@ -151,4 +151,23 @@ namespace vishnevskiy
     delete[] valuesCopy;
     delete[] flagsCopy;
   }
+
+  template <class Key, class Value, class Hash, class Equal>
+  HashTable<Key, Value, Hash, Equal>::HashTable(size_t capacity):
+    keys(nullptr),
+    values(nullptr),
+    flags(nullptr),
+    size(0),
+    cap(capacity)
+  {
+    createEls(cap);
+  }
+
+  template <class Key, class Value, class Hash, class Equal>
+  HashTable<Key, Value, Hash, Equal>::~HashTable()
+  {
+    delete[] keys;
+    delete[] values;
+    delete[] flags;
+  }
 }
