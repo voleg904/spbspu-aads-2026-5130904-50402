@@ -21,6 +21,7 @@ namespace vishnevskiy
       size_t probe(size_t ind);
       size_t findByKey(const Key& key);
       size_t findFree(const Key& key);
+      void createEls(size_t capacity);
 
     public:
       HashTable(size_t capacity);

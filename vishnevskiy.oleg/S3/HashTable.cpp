@@ -153,6 +153,36 @@ namespace vishnevskiy
   }
 
   template <class Key, class Value, class Hash, class Equal>
+  void HashTable<Key, Value, Hash, Equal>::createEls(size_t capacity)
+  {
+    Key* keyPtr = nullptr;
+    Value* = valPtr = nullptr;
+    size_t flagPtr = nullptr;
+
+    try
+    {
+      keyPtr = new Key[capacity];
+      valPtr = new Value[capacity];
+      flagPtr = new size_t[capacity];
+    }
+    catch (const std::bad_alloc& e)
+    {
+      delete[] keyPtr;
+      delete[] valPtr;
+      delete[] flagPtr;
+      throw e;
+    }
+
+    for (size_t i = 0; i < capacity; ++i)
+    {
+      flagPtr[i] = 0;
+    }
+    keys = keyPtr;
+    values = valPtr;
+    flags = flagPtr;
+  }
+
+  template <class Key, class Value, class Hash, class Equal>
   HashTable<Key, Value, Hash, Equal>::HashTable(size_t capacity):
     keys(nullptr),
     values(nullptr),
