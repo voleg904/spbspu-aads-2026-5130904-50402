@@ -24,12 +24,14 @@ namespace vishnevskiy
       void createEls(size_t capacity);
 
     public:
-      HashTable(size_t capacity);
+      HashTable(size_t capacity, Hash hash_f, Equal eq_f);
       ~HashTable();
-      void add(Key& k, Value& v);
+      void add(const Key& k, const Value& v);
       Value drop(Key k);
       bool has(Key k);
       void rehash(size_t slots);
+      size_t getSize();
+      size_t getCapacity();
   };
 }
 

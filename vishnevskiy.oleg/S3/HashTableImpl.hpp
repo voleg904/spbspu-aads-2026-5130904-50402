@@ -1,4 +1,10 @@
-#include "NoteTools.hpp"
+#ifndef HASHTABLEIMPL_HPP
+#define HASHTABLEIMPL_HPP
+
+#include <boost/hash2/siphash.hpp>
+#include "HashTable.hpp"
+#include <cstddef>
+#include <stdexcept>
 
 namespace vishnevskiy
 {
@@ -70,7 +76,7 @@ namespace vishnevskiy
   }
 
   template <class Key, class Value, class Hash, class Equal>
-  void HashTable<Key, Value, Hash, Equal>::add(Key& k, Value& v)
+  void HashTable<Key, Value, Hash, Equal>::add(const Key& k, const Value& v)
   {
     size_t curr = findFree(k);
 
@@ -80,7 +86,7 @@ namespace vishnevskiy
     }
     if (flags[curr] == 1 && eq(keys[curr], k))
     {
-      values[curr] = val;
+      values[curr] = v;
     }
     else
     {
@@ -94,7 +100,7 @@ namespace vishnevskiy
   template <class Key, class Value, class Hash, class Equal>
   Value HashTable<Key, Value, Hash, Equal>::drop(Key k)
   {
-    size_t curr = findFree(k);
+    size_t curr = findByKey(k);
 
     if (curr <= cap && flags[curr] == 1)
     {
@@ -156,8 +162,8 @@ namespace vishnevskiy
   void HashTable<Key, Value, Hash, Equal>::createEls(size_t capacity)
   {
     Key* keyPtr = nullptr;
-    Value* = valPtr = nullptr;
-    size_t flagPtr = nullptr;
+    Value* valPtr = nullptr;
+    size_t* flagPtr = nullptr;
 
     try
     {
@@ -183,11 +189,13 @@ namespace vishnevskiy
   }
 
   template <class Key, class Value, class Hash, class Equal>
-  HashTable<Key, Value, Hash, Equal>::HashTable(size_t capacity):
+  HashTable<Key, Value, Hash, Equal>::HashTable(size_t capacity, Hash hash_f, Equal eq_f):
     keys(nullptr),
     values(nullptr),
     flags(nullptr),
     size(0),
+    hash(hash_f),
+    eq(eq_f),
     cap(capacity)
   {
     createEls(cap);
@@ -200,4 +208,18 @@ namespace vishnevskiy
     delete[] values;
     delete[] flags;
   }
+
+  template <class Key, class Value, class Hash, class Equal>
+  size_t HashTable<Key, Value, Hash, Equal>::getSize()
+  {
+    return size;
+  }
+
+  template <class Key, class Value, class Hash, class Equal>
+  size_t HashTable<Key, Value, Hash, Equal>::getCapacity()
+  {
+    return cap;
+  }
 }
+
+#endif
