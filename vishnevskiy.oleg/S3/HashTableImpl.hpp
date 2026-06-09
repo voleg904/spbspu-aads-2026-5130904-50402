@@ -141,6 +141,7 @@ namespace vishnevskiy
       throw e;
     }
     size = 0;
+    cap = slots;
 
     for (size_t i = 0; i < cap; ++i)
     {
