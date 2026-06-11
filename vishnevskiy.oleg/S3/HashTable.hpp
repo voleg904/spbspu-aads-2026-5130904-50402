@@ -28,10 +28,30 @@ namespace vishnevskiy
       ~HashTable();
       void add(const Key& k, const Value& v);
       Value drop(Key k);
+      Value& at(const Key& k);
+      const Value& at(const Key& k) const;
       bool has(Key k);
       void rehash(size_t slots);
       size_t getSize();
       size_t getCapacity();
+
+      friend class tableIt<Key, Value, Hash, Equal>;
+  };
+
+  template <class Key, class Value, class Hash, class Equal>
+  class tableIt
+  {
+    private:
+      const HashTable<Key, Value, Hash, Equal>* table;
+      size_t curr;
+
+    public:
+      tableIt();
+      tableIt(const HashTable<Key, Value, Hash, Equal>* table;
+      void next();
+      bool hasNext();
+      Value& val();
+      Key& key();
   };
 }
 

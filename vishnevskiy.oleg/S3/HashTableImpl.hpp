@@ -221,6 +221,84 @@ namespace vishnevskiy
   {
     return cap;
   }
+
+  template <class Key, class Value, class Hash, class Equal>
+  Value& HashTable<Key, Value, Hash, Equal>::at(const Key& k)
+  {
+    size_t curr = findByKey(k);
+
+    if (curr <= cap && flags[curr] == 1)
+    {
+      Value result = values[curr];
+      return result;
+    }
+    throw std::runtime_error("Key does not exist");
+  }
+
+  template <class Key, class Value, class Hash, class Equal>
+  const Value& HashTable<Key, Value, Hash, Equal>::at(const Key& k) const
+  {
+    size_t curr = findByKey(k);
+
+    if (curr <= cap && flags[curr] == 1)
+    {
+      Value result = values[curr];
+      return result;
+    }
+    throw std::runtime_error("Key does not exist");
+  }
+
+  template <class Key, class Value, class Hash, class Equal>
+  tableIt<Key, Value, Hash, Equal>::tableIt():
+    table(nullptr),
+    curr(0)
+  {}
+
+  template <class Key, class Value, class Hash, class Equal>
+  tableIt<Key, Value, Hash, Equal>::tableIt(const HashTable<Key, Value, Hash, Equal>* InitialTable):
+    table(InitialTable),
+    curr(0)
+  {
+    while (curr < table->getCapacity() && table->flags[curr] != 1)
+    {
+      curr++;
+    }
+  }
+
+  template <class Key, class Value, class Hash, class Equal>
+  void tableIt<Key, Value, Hash, Equal>::next()
+  {
+    if (table && curr < table->cap)
+    {
+      curr++;
+      while (curr < table->cap && table->flags[curr] != 1)
+      {
+        curr++;
+      }
+    }
+  }
+
+  template <class Key, class Value, class Hash, class Equal>
+  void tableIt<Key, Value, Hash, Equal>::hasNext()
+  {
+    if (table && curr >= table->cap)
+    {
+      return false;
+    }
+    return true;
+  }
+
+  template <class Key, class Value, class Hash, class Equal>
+  void tableIt<Key, Value, Hash, Equal>::val()
+  {
+    return table->values[curr];
+  }
+
+  template <class Key, class Value, class Hash, class Equal>
+  void tableIt<Key, Value, Hash, Equal>::key()
+  {
+    return table->keys[curr];
+  }
 }
 
 #endif
