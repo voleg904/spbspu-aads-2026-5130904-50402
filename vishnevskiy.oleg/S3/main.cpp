@@ -91,12 +91,66 @@ namespace vishnevskiy
 
   void outbound(std::ostream& o, std::istream& i, graph_t& graphtable)
   {
-    
+    std::string graphName, vertex;
+    i >> graphName >> vertex;
+
+    if (graphtable.has(name))
+    {
+      vishnevskiy::graph g = graphtable.at(name);
+      vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>, size_t(*)(const vishnevskiy::vertex&), bool(*)(const vishnevskiy::vertex&, const vishnevskiy::vertex&)> it(&g.vertexes);
+      while (it.hasNext())
+      {
+        if (it.key().in == vertex)
+        {
+          o << it.key().out;
+          vishnevskiy::List<int>& weights = it.val();
+          vishnevskiy::LIter<int> Wit(&weights);
+          while (Wit.hasNext())
+          {
+            o << " " << Wit.value();
+            ++Wit;
+          }
+          o << " " << Wit.value() << "\n";
+        }
+        it.next();
+      }
+    }
+    else
+    {
+      throw std::logic_error("Cannot find name!");
+    }
   }
 
   void inbound(std::ostream& o, std::istream& i, graph_t& graphtable)
   {
+    std::string graphName, vertex;
+    i >> graphName >> vertex;
 
+    if (graphtable.has(name))
+    {
+      vishnevskiy::graph g = graphtable.at(name);
+      vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>, size_t(*)(const vishnevskiy::vertex&), bool(*)(const vishnevskiy::vertex&, const vishnevskiy::vertex&)> it(&g.vertexes);
+      while (it.hasNext())
+      {
+        if (it.key().out == vertex)
+        {
+          o << it.key().in;
+          vishnevskiy::List<int>& weights = it.val();
+          vishnevskiy::LIter<int> Wit(&weights);
+          while (Wit.hasNext())
+          {
+            o << " " << Wit.value();
+            ++Wit;
+          }
+          o << " " << Wit.value() << "\n";
+        }
+        it.next();
+      }
+    }
+    else
+    {
+      throw std::logic_error("Cannot find name!");
+    }
   }
 
   void bind(std::ostream& o, std::istream& i, graph_t& graphtable)
