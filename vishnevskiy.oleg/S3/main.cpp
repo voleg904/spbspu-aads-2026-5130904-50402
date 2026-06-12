@@ -91,8 +91,8 @@ namespace vishnevskiy
 
   void outbound(std::ostream& o, std::istream& i, graph_t& graphtable)
   {
-    std::string graphName, vertex;
-    i >> graphName >> vertex;
+    std::string name, vertex;
+    i >> name >> vertex;
 
     if (graphtable.has(name))
     {
@@ -123,8 +123,8 @@ namespace vishnevskiy
 
   void inbound(std::ostream& o, std::istream& i, graph_t& graphtable)
   {
-    std::string graphName, vertex;
-    i >> graphName >> vertex;
+    std::string name, vertex;
+    i >> name >> vertex;
 
     if (graphtable.has(name))
     {
@@ -155,27 +155,206 @@ namespace vishnevskiy
 
   void bind(std::ostream& o, std::istream& i, graph_t& graphtable)
   {
+    std::string name, from, to;
+    int weight;
+    i >> name >> from >> to >> weight;
 
+    if (graphtable.has(name))
+    {
+      vishnevskiy::graph& g = graphtable.at(name);
+      vishnevskiy::vertex v{to, from};
+  
+      if (g.vertexes.has(v))
+      {
+        vishnevskiy::LIter<int> it(&g.vertexes.at(v));
+        it.end();
+        it.insert(weight);
+      }
+      else
+      {
+        vishnevskiy::List<int> w;
+        w.val = weight;
+        w.next = nullptr;
+        g.vertexes.add(v, w);
+      }
+    }
+    else
+    {
+      throw std::logic_error("Cannot find name!");
+    }
   }
 
   void cut(std::ostream& o, std::istream& i, graph_t& graphtable)
   {
+    std::string name, from, to;
+    int weight;
+    i >> name >> from >> to >> weight;
 
+    if (!graphtable.has(name))
+    {
+      throw std::logic_error("Cannot find name!");
+    }
+
+    vishnevskiy::graph& g = graphtable.at(name);
+    vishnevskiy::vertex v{to, from};
+
+    if (!g.vertexes.has(v))
+    {
+      throw std::logic_error("Cannot find vertex!");
+    }
+
+    vishnevskiy::List<int>& wlist = g.vertexes.at(v);
+    vishnevskiy::LIter<int> prev(&wlist);
+    vishnevskiy::LIter<int> curr(&wlist);
+    bool f = false;
+    while (curr.hasNext() && !f)
+    {
+      if (curr.value() == weight)
+      {
+        f = true;
+      }
+      prev = curr;
+      ++curr;
+    }
+
+    if (!f)
+    {
+      throw std::logic_error("Cannot find weight!");
+    }
+
+    if (curr.curr == &wlist)
+    {
+      vishnevskiy::List<int>* next = wlist.next;
+      if (next)
+      {
+        wlist.val = next->val;
+        wlist.next = next->next;
+        delete next;
+      }
+      else
+      {
+        g.vertexes.drop(v);
+      }
+    }
+    else
+    {
+      prev.curr->next = curr.curr->next;
+      delete curr.curr;
+    }
   }
 
   void create(std::ostream& o, std::istream& i, graph_t& graphtable)
   {
+    std::string name;
+    i >> name;
 
+    if (graphtable.has(name))
+    {
+      throw std::logic_error("Graph exists!");
+    }
+    graphtable.add(name, vishnevskiy::graph(name));
   }
 
   void merge(std::ostream& o, std::istream& i, graph_t& graphtable)
   {
+    std::string name1, name2, newname;
+    i >> name1 >> name2 >> newname;
 
+    if (!graphtable.has(name1) || !graphtable.has(name2))
+    {
+      throw std::logic_error("Cannot find name!");
+    }
+
+    if (graphtable.has(newname))
+    {
+      throw std::logic_error("Graph exists!");
+    }
+
+    vishnevskiy::graph& g1 = graphtable.at(name1);
+    vishnevskiy::graph& g2 = graphtable.at(name2);
+    vishnevskiy::graph newGraph;
+    newGraph.name = newname;
+
+    vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>, size_t(*)(const vishnevskiy::vertex&), bool(*)(const vishnevskiy::vertex&, const vishnevskiy::vertex&)> it1(&g1.vertexes);
+    while (it1.hasNext())
+    {
+      newGraph.vertexes.add(it1.key(), it1.val());
+      it1.next();
+    }
+
+    vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>, size_t(*)(const vishnevskiy::vertex&), bool(*)(const vishnevskiy::vertex&, const vishnevskiy::vertex&)> it2(&g2.vertexes);
+    while (it2.hasNext())
+    {
+      if (newGraph.vertexes.has(it2.key()))
+      {
+        vishnevskiy::LIter<int> it(&newGraph.vertexes.at(it2.key()));
+        it.end();
+        vishnevskiy::LIter<int> wit(&it2.val());
+        while (wit.hasNext())
+        {
+          it.insert(wit.value());
+          ++wit;
+        }
+      }
+      else
+      {
+        newGraph.vertexes.add(it2.key(), it2.val());
+      }
+      it2.next();
+    }
+
+    graphtable.add(newname, newGraph);
   }
 
   void extract(std::ostream& o, std::istream& i, graph_t& graphtable)
   {
+    std::string newname, oldname;
+    size_t vertexCount;
+    i >> newname >> oldname >> vertexCount;
 
+    if (graphtable.has(newname) || !graphtable.has(oldname))
+    {
+      throw std::logic_error("Incorrect name!");
+    }
+
+    vishnevskiy::graph& oldGraph = graphtable.at(oldname);
+    vishnevskiy::graph newGraph;
+    newGraph.name = newname;
+
+    std::string* vertexNames = new std::string[vertexCount];
+    for (size_t j = 0; j < vertexCount; ++j)
+    {
+      i >> vertexNames[j];
+    }
+
+    vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>, size_t(*)(const vishnevskiy::vertex&), bool(*)(const vishnevskiy::vertex&, const vishnevskiy::vertex&)> it(&oldGraph.vertexes);
+    while (it.hasNext())
+    {
+      std::string from = it.key().in;
+      std::string to = it.key().out;
+
+      bool fromFlag = false;
+      bool toFlag = false;
+      for (size_t j = 0; j < vertexCount; ++j)
+      {
+        if (vertexNames[j] == from)
+        {
+          fromFlag = true;
+        }
+        if (vertexNames[j] == to)
+        {
+          toFlag = true;
+        }
+      }
+
+      if (fromFlag && toFlag)
+      {
+        newGraph.vertexes.add(it.key(), it.val());
+      }
+
+      it.next();
+    }
+    graphtable.add(newname, newGraph);
   }
 
   int main(int argc, char* argv[])
