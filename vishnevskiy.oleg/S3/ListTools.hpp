@@ -19,6 +19,9 @@ namespace vishnevskiy
       List<T>* next;
       List();
       List(T vl, List<T>* nxt);
+      List(const List<T>& other);
+      List<T>& operator=(const List<T>& other);
+      ~List();
   };
 
   template <class T>
@@ -66,7 +69,7 @@ namespace vishnevskiy
       void set(List<T>* h);
       bool hasNext();
       void end();
-      void insert(T& d);
+      void insert(const T& d);
       void clear(LIter* head);
       template <class C>
       void traverse(C func);

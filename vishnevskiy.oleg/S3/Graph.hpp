@@ -12,19 +12,23 @@ namespace vishnevskiy
   {
     std::string out;
     std::string in;
+    vertex() = default;
+    vertex(const std::string& o, const std::string& i):
+      out(o),
+      in(i)
+    {}
+    vertex(const vertex& other) = default;
+    vertex& operator=(const vertex& other) = default;
   };
 
   struct graph
   {
     std::string name;
-    vishnevskiy::HashTable<vertex, vishnevskiy::List<int>, size_t(*)(const vertex&), bool(*)(const vertex&, const vertex&)> vertexes;
-    graph():
-      vertexes(10, vertexHasher, vertexEq)
-    {}
-    graph(const std::string& n):
-      name(n),
-      vertexes(10, vertexHasher, vertexEq)
-    {}
+    size_t vertexCount;
+    vishnevskiy::HashTable<vertex, vishnevskiy::List<int>*, size_t(*)(const vertex&), bool(*)(const vertex&, const vertex&)> vertexes;
+    graph();
+    graph(const std::string& n);
+    graph(const std::string& n, const size_t& c);
   };
 
   size_t vertexHasher(const vertex& v)
@@ -40,20 +44,28 @@ namespace vishnevskiy
     return first.out == second.out && first.in == second.in;
   }
 
+  graph::graph():
+    vertexCount(0),
+    vertexes(10, vertexHasher, vertexEq)
+  {}
+
+  graph::graph(const std::string& n):
+    name(n),
+    vertexCount(0),
+    vertexes(10, vertexHasher, vertexEq)
+  {}
+
+  graph::graph(const std::string& n, const size_t& c):
+    name(n),
+    vertexCount(c),
+    vertexes(10, vertexHasher, vertexEq)
+  {}
+
   size_t graphHasher(const std::string& name)
   {
     boost::hash2::siphash_64 hash;
     hash.update(name.data(), name.size());
     return hash.result();
-  }
-
-  bool graphEq(const graph& graph1, const graph& graph2)
-  {
-    if ((graph1.name != graph2.name) || (graph1.vertexes.getSize() != graph2.vertexes.getSize()))
-    {
-      return false;
-    }
-    return true;
   }
 }
 

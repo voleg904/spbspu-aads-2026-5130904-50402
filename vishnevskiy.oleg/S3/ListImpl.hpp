@@ -20,6 +20,42 @@ namespace vishnevskiy
   {}
 
   template <class T>
+  List<T>::List(const List<T>& other):
+    val(other.val),
+    next(nullptr)
+  {
+    if (other.next)
+    {
+      next = new List<T>(*other.next);
+    }
+  }
+
+  template <class T>
+  List<T>& List<T>::operator=(const List<T>& other)
+  {
+    if (this != &other)
+    {
+      val = other.val;
+      delete next;
+      if (other.next)
+      {
+        next = new List<T>(*other.next);
+      }
+      else
+      {
+        next = nullptr;
+      }
+    }
+    return *this;
+  }
+
+  template <class T>
+  List<T>::~List()
+  {
+    delete next;
+  }
+
+  template <class T>
   NamedList<T>::NamedList():
     name(""),
     data(nullptr),
@@ -81,7 +117,7 @@ namespace vishnevskiy
   }
 
   template <class T>
-  void LIter<T>::insert(T& d)
+  void LIter<T>::insert(const T& d)
   {
     List<T>* s = new List<T>{d, nullptr};
     if (curr)

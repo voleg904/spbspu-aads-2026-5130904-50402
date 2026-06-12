@@ -211,13 +211,62 @@ namespace vishnevskiy
   }
 
   template <class Key, class Value, class Hash, class Equal>
-  size_t HashTable<Key, Value, Hash, Equal>::getSize()
+  HashTable<Key, Value, Hash, Equal>::HashTable(const HashTable& other):
+    keys(new Key[other.cap]),
+    values(new Value[other.cap]),
+    flags(new size_t[other.cap]),
+    hash(other.hash),
+    eq(other.eq),
+    size(other.size),
+    cap(other.cap)
+  {
+    for (size_t i = 0; i < cap; ++i)
+    {
+      flags[i] = other.flags[i];
+      if (flags[i] == 1)
+      {
+        keys[i] = other.keys[i];
+        values[i] = other.values[i];
+      }
+    }
+  }
+
+  template <class Key, class Value, class Hash, class Equal>
+  HashTable<Key, Value, Hash, Equal>& HashTable<Key, Value, Hash, Equal>::operator=(const HashTable& other)
+  {
+    if (this != &other)
+    {
+      delete[] keys;
+      delete[] values;
+      delete[] flags;
+      cap = other.cap;
+      size = other.size;
+      hash = other.hash;
+      eq = other.eq;
+      keys = new Key[cap];
+      values = new Value[cap];
+      flags = new size_t[cap];
+      for (size_t i = 0; i < cap; ++i)
+      {
+        flags[i] = other.flags[i];
+        if (flags[i] == 1)
+        {
+          keys[i] = other.keys[i];
+          values[i] = other.values[i];
+        }
+      }
+    }
+    return *this;
+  }
+
+  template <class Key, class Value, class Hash, class Equal>
+  size_t HashTable<Key, Value, Hash, Equal>::getSize() const
   {
     return size;
   }
 
   template <class Key, class Value, class Hash, class Equal>
-  size_t HashTable<Key, Value, Hash, Equal>::getCapacity()
+  size_t HashTable<Key, Value, Hash, Equal>::getCapacity() const
   {
     return cap;
   }
@@ -229,8 +278,7 @@ namespace vishnevskiy
 
     if (curr <= cap && flags[curr] == 1)
     {
-      Value result = values[curr];
-      return result;
+      return values[curr];
     }
     throw std::runtime_error("Key does not exist");
   }
@@ -242,8 +290,7 @@ namespace vishnevskiy
 
     if (curr <= cap && flags[curr] == 1)
     {
-      Value result = values[curr];
-      return result;
+      return values[curr];
     }
     throw std::runtime_error("Key does not exist");
   }
@@ -279,7 +326,7 @@ namespace vishnevskiy
   }
 
   template <class Key, class Value, class Hash, class Equal>
-  void tableIt<Key, Value, Hash, Equal>::hasNext()
+  bool tableIt<Key, Value, Hash, Equal>::hasNext()
   {
     if (table && curr >= table->cap)
     {
@@ -289,13 +336,13 @@ namespace vishnevskiy
   }
 
   template <class Key, class Value, class Hash, class Equal>
-  void tableIt<Key, Value, Hash, Equal>::val()
+  Value& tableIt<Key, Value, Hash, Equal>::val()
   {
     return table->values[curr];
   }
 
   template <class Key, class Value, class Hash, class Equal>
-  void tableIt<Key, Value, Hash, Equal>::key()
+  Key& tableIt<Key, Value, Hash, Equal>::key()
   {
     return table->keys[curr];
   }
