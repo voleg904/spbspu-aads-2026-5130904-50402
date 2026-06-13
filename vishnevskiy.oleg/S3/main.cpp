@@ -148,7 +148,7 @@ void load(const std::string& filename, graph_t& graphtable)
         weights->next = nullptr;
         g.vertexes.add(v, weights);
       }
-        
+
       edgeCount--;
     }
   }
@@ -285,7 +285,7 @@ void bind(std::ostream&, std::istream& i, graph_t& graphtable)
   {
     vishnevskiy::graph& g = graphtable.at(name);
     vishnevskiy::vertex v{to, from};
-  
+
     if (g.vertexes.has(v))
     {
       vishnevskiy::List<int>* weights = g.vertexes.at(v);
