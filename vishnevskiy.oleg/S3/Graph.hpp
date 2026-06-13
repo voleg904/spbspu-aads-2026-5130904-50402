@@ -64,6 +64,8 @@ namespace vishnevskiy
 
   graph::~graph()
   {
+    using vHt = size_t(*)(const vishnevskiy::vertex&);
+    using vEqt = bool(*)(const vishnevskiy::vertex&, const vishnevskiy::vertex&);
     vishnevskiy::tableIt<vertex, vishnevskiy::List<int>*, vHt, vEqt> it(&vertexes);
     while (it.hasNext())
     {
