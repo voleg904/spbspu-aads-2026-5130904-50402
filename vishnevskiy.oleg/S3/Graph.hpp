@@ -29,6 +29,7 @@ namespace vishnevskiy
     graph();
     graph(const std::string& n);
     graph(const std::string& n, const size_t& c);
+    ~graph();
   };
 
   size_t vertexHasher(const vertex& v)
@@ -60,6 +61,16 @@ namespace vishnevskiy
     vertexCount(c),
     vertexes(10, vertexHasher, vertexEq)
   {}
+
+  graph::~graph()
+  {
+    vishnevskiy::tableIt<vertex, vishnevskiy::List<int>*, vHt, vEqt> it(&vertexes);
+    while (it.hasNext())
+    {
+      delete it.val();
+      it.next();
+    }
+  }
 
   size_t graphHasher(const std::string& name)
   {
