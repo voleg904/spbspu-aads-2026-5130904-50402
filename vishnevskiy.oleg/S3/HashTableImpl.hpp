@@ -194,9 +194,9 @@ namespace vishnevskiy
     keys(nullptr),
     values(nullptr),
     flags(nullptr),
-    size(0),
     hash(hash_f),
     eq(eq_f),
+    size(0),
     cap(capacity)
   {
     createEls(cap);

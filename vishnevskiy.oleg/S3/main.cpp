@@ -28,9 +28,9 @@ size_t stringHasher(const std::string& s)
 
 void sortStrings(std::string* arr, size_t size)
 {
-  for (int i = 0; i < size - 1; ++i)
+  for (size_t i = 0; i < size - 1; ++i)
   {
-    for (int j = 0; j < size - i - 1; ++j)
+    for (size_t j = 0; j < size - i - 1; ++j)
     {
       if (arr[j] > arr[j + 1])
       {
@@ -44,9 +44,9 @@ void sortStrings(std::string* arr, size_t size)
 
 void sortPair(std::pair<std::string, vishnevskiy::List<int>*>* data, size_t size)
 {
-  for (int i = 0; i < size - 1; ++i)
+  for (size_t i = 0; i < size - 1; ++i)
   {
-    for (int j = 0; j < size - i - 1; ++j)
+    for (size_t j = 0; j < size - i - 1; ++j)
     {
       if (data[j].first > data[j + 1].first)
       {
@@ -60,7 +60,7 @@ void sortPair(std::pair<std::string, vishnevskiy::List<int>*>* data, size_t size
 
 void printWeights(vishnevskiy::List<int>* weights, std::ostream& o)
 {
-  int cnt = 0;
+  size_t cnt = 0;
   vishnevskiy::LIter<int> countIt(weights);
   while (countIt.hasNext())
   {
@@ -70,14 +70,14 @@ void printWeights(vishnevskiy::List<int>* weights, std::ostream& o)
   cnt++;
   int* arr = new int[cnt];
   vishnevskiy::LIter<int> fillIt(weights);
-  for (int i = 0; i < cnt; ++i)
+  for (size_t i = 0; i < cnt; ++i)
   {
     arr[i] = fillIt.value();
     if (fillIt.hasNext()) ++fillIt;
   }
-  for (int i = 0; i < cnt - 1; ++i)
+  for (size_t i = 0; i < cnt - 1; ++i)
   {
-    for (int j = 0; j < cnt - i - 1; ++j)
+    for (size_t j = 0; j < cnt - i - 1; ++j)
     {
       if (arr[j] > arr[j + 1])
       {
@@ -87,7 +87,7 @@ void printWeights(vishnevskiy::List<int>* weights, std::ostream& o)
       }
     }
   }
-  for (int i = 0; i < cnt; ++i)
+  for (size_t i = 0; i < cnt; ++i)
   {
     o << " " << arr[i];
   }
@@ -148,7 +148,7 @@ void load(const std::string& filename, graph_t& graphtable)
         weights->next = nullptr;
         g.vertexes.add(v, weights);
       }
-
+        
       edgeCount--;
     }
   }
@@ -173,7 +173,6 @@ void vertexes(std::ostream& o, std::istream& i, graph_t& graphtable)
     vishnevskiy::graph& g = graphtable.at(name);
     vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>*, vHt, vEqt> it(&g.vertexes);
     std::string* vert = new std::string[g.vertexCount * 2];
-    size_t maxSize = g.vertexCount * 2;
     size_t currSize = 0;
     while (it.hasNext())
     {
@@ -276,7 +275,7 @@ void inbound(std::ostream& o, std::istream& i, graph_t& graphtable)
   }
 }
 
-void bind(std::ostream& o, std::istream& i, graph_t& graphtable)
+void bind(std::ostream&, std::istream& i, graph_t& graphtable)
 {
   std::string name, from, to;
   int weight;
@@ -286,7 +285,7 @@ void bind(std::ostream& o, std::istream& i, graph_t& graphtable)
   {
     vishnevskiy::graph& g = graphtable.at(name);
     vishnevskiy::vertex v{to, from};
-
+  
     if (g.vertexes.has(v))
     {
       vishnevskiy::List<int>* weights = g.vertexes.at(v);
@@ -308,7 +307,7 @@ void bind(std::ostream& o, std::istream& i, graph_t& graphtable)
   }
 }
 
-void cut(std::ostream& o, std::istream& i, graph_t& graphtable)
+void cut(std::ostream&, std::istream& i, graph_t& graphtable)
 {
   std::string name, from, to;
   int weight;
@@ -368,7 +367,7 @@ void cut(std::ostream& o, std::istream& i, graph_t& graphtable)
   }
 }
 
-void create(std::ostream& o, std::istream& i, graph_t& graphtable)
+void create(std::ostream&, std::istream& i, graph_t& graphtable)
 {
   std::string name;
   i >> name;
@@ -380,7 +379,7 @@ void create(std::ostream& o, std::istream& i, graph_t& graphtable)
   graphtable.add(name, vishnevskiy::graph(name));
 }
 
-void merge(std::ostream& o, std::istream& i, graph_t& graphtable)
+void merge(std::ostream&, std::istream& i, graph_t& graphtable)
 {
   std::string name1, name2, newname;
   i >> name1 >> name2 >> newname;
@@ -435,7 +434,7 @@ void merge(std::ostream& o, std::istream& i, graph_t& graphtable)
   graphtable.add(newname, newGraph);
 }
 
-void extract(std::ostream& o, std::istream& i, graph_t& graphtable)
+void extract(std::ostream&, std::istream& i, graph_t& graphtable)
 {
   std::string newname, oldname;
   size_t vertexCount;
