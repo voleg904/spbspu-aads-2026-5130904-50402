@@ -7,7 +7,12 @@
 #include "ListImpl.hpp"
 #include <limits>
 
-using graph_t = vishnevskiy::HashTable<std::string, vishnevskiy::graph, size_t(*)(const std::string&), bool(*)(const std::string&, const std::string&)>;
+using pair_t = std::pair<std::string, vishnevskiy::List<int>*>;
+using stringHash_t = size_t(*)(const std::string&);
+using stringEq_t = bool(*)(const std::string&, const std::string&);
+using vHt = size_t(*)(const vishnevskiy::vertex&);
+using vEqt = bool(*)(const vishnevskiy::vertex&, const vishnevskiy::vertex&);
+using graph_t = vishnevskiy::HashTable<std::string, vishnevskiy::graph, stringHash_t, stringEq_t>;
 
 bool stringEq(const std::string& a, const std::string& b)
 {
@@ -151,7 +156,7 @@ void load(const std::string& filename, graph_t& graphtable)
 
 void graphs(std::ostream& o, std::istream&, graph_t& graphtable)
 {
-  vishnevskiy::tableIt<std::string, vishnevskiy::graph, size_t(*)(const std::string&), bool(*)(const std::string&, const std::string&)> it(&graphtable);
+  vishnevskiy::tableIt<std::string, vishnevskiy::graph, stringHash_t, stringEq_t> it(&graphtable);
   while (it.hasNext())
   {
     o << it.key() << "\n";
@@ -166,7 +171,7 @@ void vertexes(std::ostream& o, std::istream& i, graph_t& graphtable)
   if (graphtable.has(name))
   {
     vishnevskiy::graph& g = graphtable.at(name);
-    vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>*, size_t(*)(const vishnevskiy::vertex&), bool(*)(const vishnevskiy::vertex&, const vishnevskiy::vertex&)> it(&g.vertexes);
+    vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>*, vHt, vEqt> it(&g.vertexes);
     std::string* vert = new std::string[g.vertexCount * 2];
     size_t maxSize = g.vertexCount * 2;
     size_t currSize = 0;
@@ -207,9 +212,9 @@ void outbound(std::ostream& o, std::istream& i, graph_t& graphtable)
   if (graphtable.has(name))
   {
     vishnevskiy::graph& g = graphtable.at(name);
-    std::pair<std::string, vishnevskiy::List<int>*>* pair = new std::pair<std::string, vishnevskiy::List<int>*>[g.vertexCount * 2];
+    pair_t* pair = new pair_t[g.vertexCount * 2];
     size_t currEl = 0;
-    vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>*, size_t(*)(const vishnevskiy::vertex&), bool(*)(const vishnevskiy::vertex&, const vishnevskiy::vertex&)> it(&g.vertexes);
+    vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>*, vHt, vEqt> it(&g.vertexes);
     while (it.hasNext())
     {
       if (it.key().in == vertex)
@@ -243,9 +248,9 @@ void inbound(std::ostream& o, std::istream& i, graph_t& graphtable)
   if (graphtable.has(name))
   {
     vishnevskiy::graph& g = graphtable.at(name);
-    std::pair<std::string, vishnevskiy::List<int>*>* pair = new std::pair<std::string, vishnevskiy::List<int>*>[g.vertexCount * 2];
+    pair_t* pair = new pair_t[g.vertexCount * 2];
     size_t currEl = 0;
-    vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>*, size_t(*)(const vishnevskiy::vertex&), bool(*)(const vishnevskiy::vertex&, const vishnevskiy::vertex&)> it(&g.vertexes);
+    vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>*, vHt, vEqt> it(&g.vertexes);
     while (it.hasNext())
     {
       if (it.key().out == vertex)
@@ -395,7 +400,7 @@ void merge(std::ostream& o, std::istream& i, graph_t& graphtable)
   size_t totalVertexes = g1.vertexCount + g2.vertexCount;
   vishnevskiy::graph newGraph(newname, totalVertexes);
 
-  vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>*, size_t(*)(const vishnevskiy::vertex&), bool(*)(const vishnevskiy::vertex&, const vishnevskiy::vertex&)> it1(&g1.vertexes);
+  vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>*, vHt, vEqt> it1(&g1.vertexes);
   while (it1.hasNext())
   {
     vishnevskiy::List<int>* ls = new vishnevskiy::List<int>(*it1.val());
@@ -403,7 +408,7 @@ void merge(std::ostream& o, std::istream& i, graph_t& graphtable)
     it1.next();
   }
 
-  vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>*, size_t(*)(const vishnevskiy::vertex&), bool(*)(const vishnevskiy::vertex&, const vishnevskiy::vertex&)> it2(&g2.vertexes);
+  vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>*, vHt, vEqt> it2(&g2.vertexes);
   while (it2.hasNext())
   {
     if (newGraph.vertexes.has(it2.key()))
@@ -441,7 +446,7 @@ void extract(std::ostream& o, std::istream& i, graph_t& graphtable)
     throw std::logic_error("Incorrect name!");
   }
 
-  vishnevskiy::graph& oldGraph = graphtable.at(oldname);
+  vishnevskiy::graph& old = graphtable.at(oldname);
   vishnevskiy::graph newGraph(newname, vertexCount);
 
   std::string* vertexNames = new std::string[vertexCount];
@@ -450,7 +455,7 @@ void extract(std::ostream& o, std::istream& i, graph_t& graphtable)
     i >> vertexNames[j];
   }
 
-  vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>*, size_t(*)(const vishnevskiy::vertex&), bool(*)(const vishnevskiy::vertex&, const vishnevskiy::vertex&)> it(&oldGraph.vertexes);
+  vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>*, vHt, vEqt> it(&old.vertexes);
   while (it.hasNext())
   {
     std::string from = it.key().in;
@@ -492,7 +497,7 @@ int main(int argc, char* argv[])
   std::string filename = argv[1];
 
   using cm_t = void(*)(std::ostream&, std::istream&, graph_t&);
-  using table_t = vishnevskiy::HashTable<std::string, cm_t, size_t(*)(const std::string&), bool(*)(const std::string&, const std::string&)>;
+  using table_t = vishnevskiy::HashTable<std::string, cm_t, stringHash_t, stringEq_t>;
   graph_t graphtable(64, stringHasher, stringEq);
 
   try

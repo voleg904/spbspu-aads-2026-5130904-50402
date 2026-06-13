@@ -232,7 +232,8 @@ namespace vishnevskiy
   }
 
   template <class Key, class Value, class Hash, class Equal>
-  HashTable<Key, Value, Hash, Equal>& HashTable<Key, Value, Hash, Equal>::operator=(const HashTable& other)
+  HashTable<Key, Value, Hash, Equal>&
+  HashTable<Key, Value, Hash, Equal>::operator=(const HashTable& other)
   {
     if (this != &other)
     {
