@@ -45,7 +45,7 @@ namespace vishnevskiy
     size_t ind = getIndex(key);
     size_t firstTombstone = cap;
     bool hasTombstone = false;
-    
+
     for (size_t i = 0; i < cap; ++i)
     {
       size_t f = flags[ind];
