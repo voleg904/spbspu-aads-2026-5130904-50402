@@ -50,6 +50,9 @@ namespace vishnevskiy
     return first.out == second.out && first.in == second.in;
   }
 
+  using vHt = size_t(*)(const vishnevskiy::vertex&);
+  using vEqt = bool(*)(const vishnevskiy::vertex&, const vishnevskiy::vertex&);
+
   graph::graph():
     vertexCount(0),
     pointCount(0),
@@ -102,6 +105,22 @@ namespace vishnevskiy
       vertexCount = other.vertexCount;
       pointCount = other.pointCount;
 
+      vishnevskiy::tableIt<vertex, vishnevskiy::List<int>*, vHt, vEqt> tableit(&vertexes);
+      while (tableit.hasNext())
+      {
+        delete tableit.val();
+        tableit.next();
+      }
+      vertexes = vishnevskiy::HashTable<vertex, vishnevskiy::List<int>*, vHt, vEqt>(10, vertexHasher, vertexEq);
+
+      vishnevskiy::tableIt<vertex, vishnevskiy::List<int>*, vHt, vEqt> cpy(&other.vertexes);
+      while (cpy.hasNext())
+      {
+        vishnevskiy::List<int>* newList = new vishnevskiy::List<int>(*cpy.val());
+        vertexes.add(cpy.key(), newList);
+        cpy.next();
+      }
+
       if (points)
       {
         vishnevskiy::LIter<std::string> it(points);
@@ -128,8 +147,6 @@ namespace vishnevskiy
           h = h->next;
         }
       }
-
-      vertexes = other.vertexes;
     }
     return *this;
   }
@@ -138,9 +155,6 @@ namespace vishnevskiy
   {
     delete points;
     points = nullptr;
-
-    using vHt = size_t(*)(const vishnevskiy::vertex&);
-    using vEqt = bool(*)(const vishnevskiy::vertex&, const vishnevskiy::vertex&);
     vishnevskiy::tableIt<vertex, vishnevskiy::List<int>*, vHt, vEqt> it(&vertexes);
     while (it.hasNext())
     {
