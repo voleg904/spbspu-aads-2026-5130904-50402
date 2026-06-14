@@ -135,11 +135,9 @@ namespace vishnevskiy
   void LIter<T>::clear(LIter<T>* head)
   {
     List<T>* c = head -> curr;
-    List<T>* c = head->curr;
     while (c)
     {
       List<T>* next = c -> next;
-      List<T>* next = c->next;
       delete c;
       c = next;
     }
