@@ -167,7 +167,7 @@ void load(const std::string& filename, graph_t& graphtable)
         g.points->next = nullptr;
         g.pointCount = 1;
       }
-      
+
       if (!hasElList(g.points, to))
       {
         vishnevskiy::LIter<std::string> it(g.points);
@@ -182,7 +182,7 @@ void load(const std::string& filename, graph_t& graphtable)
         it.end();
         it.insert(from);
       }
-      
+
       if (g.vertexes.has(v))
       {
         vishnevskiy::List<int>* weights = g.vertexes.at(v);
@@ -221,7 +221,7 @@ void vertexes(std::ostream& o, std::istream& i, graph_t& graphtable)
   if (graphtable.has(name))
   {
     vishnevskiy::graph& g = graphtable.at(name);
-    
+
     if (g.pointCount != 0 && g.points)
     {
       std::string* vert = new std::string[g.pointCount];
@@ -520,7 +520,7 @@ void merge(std::ostream&, std::istream& i, graph_t& graphtable)
     while (it2.hasNext())
     {
       std::string point = it2.value();
-      
+
       if (!hasElList(newGraph.points, point))
       {
         if (!newGraph.points)
