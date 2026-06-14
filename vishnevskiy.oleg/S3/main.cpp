@@ -106,6 +106,24 @@ bool hasEl(std::string* arr, size_t size, std::string el)
   return false;
 }
 
+bool hasElList(vishnevskiy::List<std::string>* arr, std::string el)
+{
+  vishnevskiy::LIter<std::string> it(arr);
+  while (it.hasNext())
+  {
+    if (it.value() == el)
+    {
+      return true;
+    }
+    ++it;
+  }
+  if (it.value() == el)
+  {
+    return true;
+  }
+  return false;
+}
+
 void load(const std::string& filename, graph_t& graphtable)
 {
   std::ifstream file(filename);
@@ -116,24 +134,55 @@ void load(const std::string& filename, graph_t& graphtable)
 
   std::string line;
   std::string graphName;
-  size_t edgeCount = 0;
+  size_t vertexCount = 0;
 
   while (std::getline(file, line))
   {
     std::istringstream iss(line);
 
-    if (edgeCount == 0)
+    if (vertexCount == 0)
     {
-      iss >> graphName >> edgeCount;
-      graphtable.add(graphName, vishnevskiy::graph(graphName, edgeCount));
+      if (!(iss >> graphName >> vertexCount))
+      {
+        throw std::runtime_error("Invalid file format");
+      }
+      vishnevskiy::graph newGraph(graphName, vertexCount);
+      graphtable.add(graphName, newGraph);
     }
     else
     {
       std::string from, to;
       int weight;
-      iss >> from >> to >> weight;
+      if (!(iss >> from >> to >> weight))
+      {
+        throw std::runtime_error("Invalid edge format");
+      }
       vishnevskiy::graph& g = graphtable.at(graphName);
       vishnevskiy::vertex v{to, from};
+
+      if (!g.points)
+      {
+        g.points = new vishnevskiy::List<std::string>();
+        g.points->val = to;
+        g.points->next = nullptr;
+        g.pointCount = 1;
+      }
+      
+      if (!hasElList(g.points, to))
+      {
+        vishnevskiy::LIter<std::string> it(g.points);
+        g.pointCount++;
+        it.end();
+        it.insert(to);
+      }
+      if (!hasElList(g.points, from))
+      {
+        vishnevskiy::LIter<std::string> it(g.points);
+        g.pointCount++;
+        it.end();
+        it.insert(from);
+      }
+      
       if (g.vertexes.has(v))
       {
         vishnevskiy::List<int>* weights = g.vertexes.at(v);
@@ -149,7 +198,7 @@ void load(const std::string& filename, graph_t& graphtable)
         g.vertexes.add(v, weights);
       }
 
-      edgeCount--;
+      vertexCount--;
     }
   }
 }
@@ -168,34 +217,33 @@ void vertexes(std::ostream& o, std::istream& i, graph_t& graphtable)
 {
   std::string name;
   i >> name;
+
   if (graphtable.has(name))
   {
     vishnevskiy::graph& g = graphtable.at(name);
-    vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>*, vHt, vEqt> it(&g.vertexes);
-    std::string* vert = new std::string[g.vertexCount * 2];
-    size_t currSize = 0;
-    while (it.hasNext())
+    
+    if (g.pointCount != 0 && g.points)
     {
-      std::string from = it.key().in;
-      std::string to = it.key().out;
-      if (!hasEl(vert, currSize, from))
+      std::string* vert = new std::string[g.pointCount];
+      size_t currEl = 0;
+      vishnevskiy::LIter<std::string> it(g.points);
+
+      while (it.hasNext())
       {
-        vert[currSize] = from;
-        currSize++;
+        vert[currEl] = it.value();
+        currEl++;
+        ++it;
       }
-      if (!hasEl(vert, currSize, to))
+      vert[currEl] = it.value();
+      currEl++;
+      sortStrings(vert, currEl);
+
+      for (size_t i = 0; i < currEl; ++i)
       {
-        vert[currSize] = to;
-        currSize++;
+        o << vert[i] << "\n";
       }
-      it.next();
+      delete[] vert;
     }
-    sortStrings(vert, currSize);
-    for (size_t i = 0; i < currSize; ++i)
-    {
-      o << vert[i] << "\n";
-    }
-    delete[] vert;
   }
   else
   {
@@ -211,7 +259,7 @@ void outbound(std::ostream& o, std::istream& i, graph_t& graphtable)
   if (graphtable.has(name))
   {
     vishnevskiy::graph& g = graphtable.at(name);
-    pair_t* pair = new pair_t[g.vertexCount * 2];
+    pair_t* pair = new pair_t[g.pointCount];
     size_t currEl = 0;
     vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>*, vHt, vEqt> it(&g.vertexes);
     while (it.hasNext())
@@ -247,7 +295,7 @@ void inbound(std::ostream& o, std::istream& i, graph_t& graphtable)
   if (graphtable.has(name))
   {
     vishnevskiy::graph& g = graphtable.at(name);
-    pair_t* pair = new pair_t[g.vertexCount * 2];
+    pair_t* pair = new pair_t[g.pointCount];
     size_t currEl = 0;
     vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>*, vHt, vEqt> it(&g.vertexes);
     while (it.hasNext())
@@ -285,6 +333,29 @@ void bind(std::ostream&, std::istream& i, graph_t& graphtable)
   {
     vishnevskiy::graph& g = graphtable.at(name);
     vishnevskiy::vertex v{to, from};
+
+    if (!g.points)
+    {
+      g.points = new vishnevskiy::List<std::string>();
+      g.points->val = to;
+      g.points->next = nullptr;
+      g.pointCount = 1;
+    }
+    else if (!hasElList(g.points, to))
+    {
+      vishnevskiy::LIter<std::string> it(g.points);
+      it.end();
+      it.insert(to);
+      g.pointCount++;
+    }
+
+    if (!hasElList(g.points, from))
+    {
+      vishnevskiy::LIter<std::string> it(g.points);
+      it.end();
+      it.insert(from);
+      g.pointCount++;
+    }
 
     if (g.vertexes.has(v))
     {
@@ -340,6 +411,11 @@ void cut(std::ostream&, std::istream& i, graph_t& graphtable)
     ++curr;
   }
 
+  if (curr.value() == weight)
+  {
+    f = true;
+  }
+
   if (!f)
   {
     throw std::logic_error("Cannot find weight!");
@@ -376,13 +452,31 @@ void create(std::ostream&, std::istream& i, graph_t& graphtable)
   {
     throw std::logic_error("Graph exists!");
   }
-  graphtable.add(name, vishnevskiy::graph(name));
+  size_t pointCount = 0;
+  if (i >> pointCount)
+  {
+    vishnevskiy::graph newGraph(name, pointCount);
+    newGraph.pointCount = pointCount;
+    vishnevskiy::LIter<std::string> it(newGraph.points);
+    for (size_t j = 0; j < pointCount; ++j)
+    {
+      std::string pointName;
+      i >> pointName;
+      it.insert(pointName);
+    }
+    graphtable.add(name, newGraph);
+  }
+  else
+  {
+    i.clear();
+    graphtable.add(name, vishnevskiy::graph(name));
+  }
 }
 
 void merge(std::ostream&, std::istream& i, graph_t& graphtable)
 {
   std::string name1, name2, newname;
-  i >> name1 >> name2 >> newname;
+  i >> newname >> name1 >> name2;
 
   if (!graphtable.has(name1) || !graphtable.has(name2))
   {
@@ -398,6 +492,64 @@ void merge(std::ostream&, std::istream& i, graph_t& graphtable)
   vishnevskiy::graph& g2 = graphtable.at(name2);
   size_t totalVertexes = g1.vertexCount + g2.vertexCount;
   vishnevskiy::graph newGraph(newname, totalVertexes);
+
+  if (g1.points)
+  {
+    newGraph.points = new vishnevskiy::List<std::string>();
+    newGraph.points->val = g1.points->val;
+    newGraph.points->next = nullptr;
+    newGraph.pointCount = 1;
+
+    vishnevskiy::List<std::string>* h = g1.points->next;
+    vishnevskiy::List<std::string>* e = newGraph.points;
+
+    while (h)
+    {
+      e->next = new vishnevskiy::List<std::string>();
+      e = e->next;
+      e->val = h->val;
+      e->next = nullptr;
+      h = h->next;
+      newGraph.pointCount++;
+    }
+  }
+
+  if (g2.points)
+  {
+    vishnevskiy::LIter<std::string> it2(g2.points);
+    while (it2.hasNext())
+    {
+      std::string point = it2.value();
+      
+      if (!hasElList(newGraph.points, point))
+      {
+        if (!newGraph.points)
+        {
+          newGraph.points = new vishnevskiy::List<std::string>();
+          newGraph.points->val = point;
+          newGraph.points->next = nullptr;
+          newGraph.pointCount = 1;
+        }
+        else
+        {
+          vishnevskiy::LIter<std::string> e(newGraph.points);
+          e.end();
+          e.insert(point);
+          newGraph.pointCount++;
+        }
+      }
+      ++it2;
+    }
+
+    std::string point = it2.value();
+    if (!hasElList(newGraph.points, point))
+    {
+      vishnevskiy::LIter<std::string> e(newGraph.points);
+      e.end();
+      e.insert(point);
+      newGraph.pointCount++;
+    }
+  }
 
   vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>*, vHt, vEqt> it1(&g1.vertexes);
   while (it1.hasNext())
@@ -422,6 +574,7 @@ void merge(std::ostream&, std::istream& i, graph_t& graphtable)
         it.insert(wit.value());
         ++wit;
       }
+      it.insert(wit.value());
     }
     else
     {
@@ -430,7 +583,6 @@ void merge(std::ostream&, std::istream& i, graph_t& graphtable)
     }
     it2.next();
   }
-
   graphtable.add(newname, newGraph);
 }
 
@@ -446,12 +598,26 @@ void extract(std::ostream&, std::istream& i, graph_t& graphtable)
   }
 
   vishnevskiy::graph& old = graphtable.at(oldname);
-  vishnevskiy::graph newGraph(newname, vertexCount);
+  vishnevskiy::graph newGraph(newname, 0);
 
   std::string* vertexNames = new std::string[vertexCount];
   for (size_t j = 0; j < vertexCount; ++j)
   {
     i >> vertexNames[j];
+    if (!newGraph.points)
+    {
+      newGraph.points = new vishnevskiy::List<std::string>();
+      newGraph.points->val = vertexNames[j];
+      newGraph.points->next = nullptr;
+      newGraph.pointCount = 1;
+    }
+    else if (!hasElList(newGraph.points, vertexNames[j]))
+    {
+      vishnevskiy::LIter<std::string> it(newGraph.points);
+      it.end();
+      it.insert(vertexNames[j]);
+      newGraph.pointCount++;
+    }
   }
 
   vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>*, vHt, vEqt> it(&old.vertexes);
@@ -460,28 +626,29 @@ void extract(std::ostream&, std::istream& i, graph_t& graphtable)
     std::string from = it.key().in;
     std::string to = it.key().out;
 
-    bool fromFlag = false;
-    bool toFlag = false;
+    bool fromF = false;
+    bool toF = false;
     for (size_t j = 0; j < vertexCount; ++j)
     {
       if (vertexNames[j] == from)
       {
-        fromFlag = true;
+        fromF = true;
       }
       if (vertexNames[j] == to)
       {
-        toFlag = true;
+        toF = true;
       }
     }
 
-    if (fromFlag && toFlag)
+    if (fromF && toF)
     {
-      vishnevskiy::List<int>* toAdd = new vishnevskiy::List<int>(*it.val());
-      newGraph.vertexes.add(it.key(), toAdd);
+      vishnevskiy::List<int>* newList = new vishnevskiy::List<int>(*it.val());
+      newGraph.vertexes.add(it.key(), newList);
+      newGraph.vertexCount++;
     }
-
     it.next();
   }
+
   delete[] vertexNames;
   graphtable.add(newname, newGraph);
 }
