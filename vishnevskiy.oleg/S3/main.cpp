@@ -289,7 +289,7 @@ void outbound(std::ostream& o, std::istream& i, graph_t& graphtable)
     vishnevskiy::graph& g = graphtable.at(name);
     if (g.pointCount == 0 || !g.points)
     {
-      throw std::logic_error("No vertexes!")
+      throw std::logic_error("No vertexes!");
     }
     pair_t* pair = new pair_t[g.pointCount];
     size_t currEl = 0;
@@ -329,7 +329,7 @@ void inbound(std::ostream& o, std::istream& i, graph_t& graphtable)
     vishnevskiy::graph& g = graphtable.at(name);
     if (g.pointCount == 0 || !g.points)
     {
-      throw std::logic_error("No vertexes!")
+      throw std::logic_error("No vertexes!");
     }
     pair_t* pair = new pair_t[g.pointCount];
     size_t currEl = 0;
