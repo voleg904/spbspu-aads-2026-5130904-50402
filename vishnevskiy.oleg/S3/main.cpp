@@ -308,6 +308,7 @@ void outbound(std::ostream& o, std::istream& i, graph_t& graphtable)
     if (!f)
     {
       o << "\n";
+      delete[] pair;
       return;
     }
     sortPair(pair, currEl);
@@ -354,6 +355,7 @@ void inbound(std::ostream& o, std::istream& i, graph_t& graphtable)
     if (!f)
     {
       o << "\n";
+      delete[] pair;
       return;
     }
     sortPair(pair, currEl);
