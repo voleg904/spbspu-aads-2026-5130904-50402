@@ -752,19 +752,5 @@ int main(int argc, char* argv[])
     std::cerr << "Bad input!\n";
     return 1;
   }
-  vishnevskiy::tableIt<std::string, vishnevskiy::graph, stringHash_t, stringEq_t> it(&graphtable);
-  while (it.hasNext())
-  {
-    std::string name = it.key();
-    vishnevskiy::graph& g = graphtable.at(name);
-    delete g.points;
-    vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>*, vHt, vEqt> vit(&g.vertexes);
-    while (vit.hasNext())
-    {
-      delete vit.val();
-      vit.next();
-    }
-    it.next();
-  }
   return 0;
 }
