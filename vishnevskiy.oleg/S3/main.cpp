@@ -211,6 +211,7 @@ void graphs(std::ostream& o, std::istream&, graph_t& graphtable)
 {
   if (graphtable.getSize() == 0)
   {
+    o << "\n";
     return;
   }
   vishnevskiy::tableIt<std::string, vishnevskiy::graph, stringHash_t, stringEq_t> it(&graphtable);
@@ -245,7 +246,6 @@ void vertexes(std::ostream& o, std::istream& i, graph_t& graphtable)
   if (graphtable.has(name))
   {
     vishnevskiy::graph& g = graphtable.at(name);
-
     if (g.pointCount != 0 && g.points)
     {
       std::string* vert = new std::string[g.pointCount];
@@ -268,6 +268,10 @@ void vertexes(std::ostream& o, std::istream& i, graph_t& graphtable)
       }
       delete[] vert;
     }
+    else
+    {
+      o << "\n";
+    }
   }
   else
   {
@@ -285,7 +289,7 @@ void outbound(std::ostream& o, std::istream& i, graph_t& graphtable)
     vishnevskiy::graph& g = graphtable.at(name);
     if (g.pointCount == 0 || !g.points)
     {
-      return;
+      throw std::logic_error("No vertexes!")
     }
     pair_t* pair = new pair_t[g.pointCount];
     size_t currEl = 0;
@@ -325,7 +329,7 @@ void inbound(std::ostream& o, std::istream& i, graph_t& graphtable)
     vishnevskiy::graph& g = graphtable.at(name);
     if (g.pointCount == 0 || !g.points)
     {
-      return;
+      throw std::logic_error("No vertexes!")
     }
     pair_t* pair = new pair_t[g.pointCount];
     size_t currEl = 0;
