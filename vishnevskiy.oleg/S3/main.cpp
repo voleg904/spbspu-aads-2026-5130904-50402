@@ -293,6 +293,7 @@ void outbound(std::ostream& o, std::istream& i, graph_t& graphtable)
     }
     pair_t* pair = new pair_t[g.pointCount];
     size_t currEl = 0;
+    bool f = false;
     vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>*, vHt, vEqt> it(&g.vertexes);
     while (it.hasNext())
     {
@@ -300,10 +301,15 @@ void outbound(std::ostream& o, std::istream& i, graph_t& graphtable)
       {
         pair[currEl] = std::make_pair(it.key().out, it.val());
         currEl++;
+        f = true;
       }
       it.next();
     }
-
+    if (!f)
+    {
+      o << "\n";
+      return;
+    }
     sortPair(pair, currEl);
     for (size_t i = 0; i < currEl; ++i)
     {
@@ -333,6 +339,7 @@ void inbound(std::ostream& o, std::istream& i, graph_t& graphtable)
     }
     pair_t* pair = new pair_t[g.pointCount];
     size_t currEl = 0;
+    bool f = false;
     vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>*, vHt, vEqt> it(&g.vertexes);
     while (it.hasNext())
     {
@@ -340,10 +347,15 @@ void inbound(std::ostream& o, std::istream& i, graph_t& graphtable)
       {
         pair[currEl] = std::make_pair(it.key().in, it.val());
         currEl++;
+        f = true;
       }
       it.next();
     }
-
+    if (!f)
+    {
+      o << "\n";
+      return;
+    }
     sortPair(pair, currEl);
     for (size_t i = 0; i < currEl; ++i)
     {
@@ -650,6 +662,7 @@ void extract(std::ostream&, std::istream& i, graph_t& graphtable)
 
   if (graphtable.has(newname) || !graphtable.has(oldname))
   {
+    i.clear();
     throw std::logic_error("Incorrect name!");
   }
 
