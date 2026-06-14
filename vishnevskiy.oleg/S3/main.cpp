@@ -209,6 +209,10 @@ void load(const std::string& filename, graph_t& graphtable)
 
 void graphs(std::ostream& o, std::istream&, graph_t& graphtable)
 {
+  if (graphtable.getSize() == 0)
+  {
+    return;
+  }
   vishnevskiy::tableIt<std::string, vishnevskiy::graph, stringHash_t, stringEq_t> it(&graphtable);
   size_t cnt = 0;
   while (it.hasNext())
@@ -279,6 +283,10 @@ void outbound(std::ostream& o, std::istream& i, graph_t& graphtable)
   if (graphtable.has(name))
   {
     vishnevskiy::graph& g = graphtable.at(name);
+    if (g.pointCount == 0 || !g.points)
+    {
+      return;
+    }
     pair_t* pair = new pair_t[g.pointCount];
     size_t currEl = 0;
     vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>*, vHt, vEqt> it(&g.vertexes);
@@ -315,6 +323,10 @@ void inbound(std::ostream& o, std::istream& i, graph_t& graphtable)
   if (graphtable.has(name))
   {
     vishnevskiy::graph& g = graphtable.at(name);
+    if (g.pointCount == 0 || !g.points)
+    {
+      return;
+    }
     pair_t* pair = new pair_t[g.pointCount];
     size_t currEl = 0;
     vishnevskiy::tableIt<vishnevskiy::vertex, vishnevskiy::List<int>*, vHt, vEqt> it(&g.vertexes);
@@ -735,13 +747,20 @@ int main(int argc, char* argv[])
     {
       cmds.at(cmd)(std::cout, std::cin, graphtable);
     }
+    catch (const std::runtime_error& e)
+    {
+      std::cout << "<INVALID COMMAND>\n";
+      auto toignore = std::numeric_limits<std::streamsize>::max();
+      std::cin.ignore(toignore, '\n');
+    }
     catch (const std::out_of_range&)
     {
       std::cout << "<INVALID COMMAND>\n";
       auto toignore = std::numeric_limits<std::streamsize>::max();
       std::cin.ignore(toignore, '\n');
     }
-    catch (const std::logic_error& e) {
+    catch (const std::logic_error& e)
+    {
       std::cout << "<INVALID COMMAND>\n";
       auto toignore = std::numeric_limits<std::streamsize>::max();
       std::cin.ignore(toignore, '\n');

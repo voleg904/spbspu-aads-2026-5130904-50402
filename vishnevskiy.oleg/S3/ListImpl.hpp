@@ -2,7 +2,6 @@
 #define LISTIMPL_HPP
 #include <cstddef>
 #include <string>
-#include <iostream>
 #include "ListTools.hpp"
 
 namespace vishnevskiy
