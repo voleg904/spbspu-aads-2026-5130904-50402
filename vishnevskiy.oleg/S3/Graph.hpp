@@ -138,8 +138,22 @@ namespace vishnevskiy
   {
     if (points)
     {
-      delete points;
+      vishnevskiy::List<std::string>* current = points;
+      while (current)
+      {
+        vishnevskiy::List<std::string>* next = current->next;
+        delete current;
+        current = next;
+      }
       points = nullptr;
+    }
+    using vHt = size_t(*)(const vishnevskiy::vertex&);
+    using vEqt = bool(*)(const vishnevskiy::vertex&, const vishnevskiy::vertex&);
+    vishnevskiy::tableIt<vertex, vishnevskiy::List<int>*, vHt, vEqt> it(&vertexes);
+    while (it.hasNext())
+    {
+      delete it.val();
+      it.next();
     }
   }
 
