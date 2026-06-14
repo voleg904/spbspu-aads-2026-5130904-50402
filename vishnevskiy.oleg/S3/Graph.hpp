@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <boost/hash2/siphash.hpp>
 
-
 namespace vishnevskiy
 {
   struct vertex
@@ -37,9 +36,6 @@ namespace vishnevskiy
     graph& operator=(const graph& other);
     ~graph();
   };
-
-  using vHt = size_t(*)(const vishnevskiy::vertex&);
-  using vEqt = bool(*)(const vishnevskiy::vertex&, const vishnevskiy::vertex&);
 
   size_t vertexHasher(const vertex& v)
   {
@@ -103,21 +99,7 @@ namespace vishnevskiy
     if (this != &other)
     {
       name = other.name;
-      vishnevskiy::tableIt<vertex, vishnevskiy::List<int>*, vHt, vEqt> itDel(&vertexes);
-      while (itDel.hasNext())
-      {
-        delete itDel.val();
-        itDel.next();
-      }
-      vertexes = vishnevskiy::HashTable<vertex, vishnevskiy::List<int>*, vHt, vEqt>(10, vertexHasher, vertexEq);
-
-      vishnevskiy::tableIt<vertex, vishnevskiy::List<int>*, vHt, vEqt> itCopy(&other.vertexes);
-      while (itCopy.hasNext())
-      {
-        vishnevskiy::List<int>* newList = new vishnevskiy::List<int>(*itCopy.val());
-        vertexes.add(itCopy.key(), newList);
-        itCopy.next();
-      }
+      vertexCount = other.vertexCount;
       pointCount = other.pointCount;
 
       if (points)
@@ -146,6 +128,8 @@ namespace vishnevskiy
           h = h->next;
         }
       }
+
+      vertexes = other.vertexes;
     }
     return *this;
   }
@@ -163,6 +147,8 @@ namespace vishnevskiy
       }
       points = nullptr;
     }
+    using vHt = size_t(*)(const vishnevskiy::vertex&);
+    using vEqt = bool(*)(const vishnevskiy::vertex&, const vishnevskiy::vertex&);
     vishnevskiy::tableIt<vertex, vishnevskiy::List<int>*, vHt, vEqt> it(&vertexes);
     while (it.hasNext())
     {
