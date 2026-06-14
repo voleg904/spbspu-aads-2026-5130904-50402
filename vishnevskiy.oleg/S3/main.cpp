@@ -472,18 +472,18 @@ void create(std::ostream&, std::istream& i, graph_t& graphtable)
   {
     throw std::logic_error("Graph exists!");
   }
-  
+
   size_t pointCount = 0;
   if (i >> pointCount)
   {
     vishnevskiy::graph newGraph(name, pointCount);
     newGraph.pointCount = 0;
-    
+
     if (pointCount > 0)
     {
       newGraph.points = new vishnevskiy::List<std::string>();
       vishnevskiy::LIter<std::string> it(newGraph.points);
-      
+
       for (size_t j = 0; j < pointCount; ++j)
       {
         std::string pointName;
