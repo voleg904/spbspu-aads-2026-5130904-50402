@@ -146,8 +146,6 @@ namespace vishnevskiy
           h = h->next;
         }
       }
-
-      vertexes = other.vertexes;
     }
     return *this;
   }
