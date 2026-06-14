@@ -138,6 +138,10 @@ void load(const std::string& filename, graph_t& graphtable)
 
   while (std::getline(file, line))
   {
+    if (line.empty() || line.find_first_not_of(" \t") == std::string::npos)
+    {
+      continue;
+    }
     std::istringstream iss(line);
 
     if (vertexCount == 0)
@@ -206,11 +210,27 @@ void load(const std::string& filename, graph_t& graphtable)
 void graphs(std::ostream& o, std::istream&, graph_t& graphtable)
 {
   vishnevskiy::tableIt<std::string, vishnevskiy::graph, stringHash_t, stringEq_t> it(&graphtable);
+  size_t cnt = 0;
   while (it.hasNext())
   {
-    o << it.key() << "\n";
+    cnt++;
     it.next();
   }
+  vishnevskiy::tableIt<std::string, vishnevskiy::graph, stringHash_t, stringEq_t> it2(&graphtable);
+  std::string* st = new std::string[cnt];
+  size_t c = 0;
+  while (it2.hasNext())
+  {
+    st[c] = it2.key();
+    c++;
+    it2.next();
+  }
+  sortStrings(st, cnt);
+  for (size_t i = 0; i < cnt; ++i)
+  {
+    o << st[i] << "\n";
+  }
+  delete[] st;
 }
 
 void vertexes(std::ostream& o, std::istream& i, graph_t& graphtable)
@@ -452,17 +472,34 @@ void create(std::ostream&, std::istream& i, graph_t& graphtable)
   {
     throw std::logic_error("Graph exists!");
   }
+  
   size_t pointCount = 0;
   if (i >> pointCount)
   {
     vishnevskiy::graph newGraph(name, pointCount);
-    newGraph.pointCount = pointCount;
-    vishnevskiy::LIter<std::string> it(newGraph.points);
-    for (size_t j = 0; j < pointCount; ++j)
+    newGraph.pointCount = 0;
+    
+    if (pointCount > 0)
     {
-      std::string pointName;
-      i >> pointName;
-      it.insert(pointName);
+      newGraph.points = new vishnevskiy::List<std::string>();
+      vishnevskiy::LIter<std::string> it(newGraph.points);
+      
+      for (size_t j = 0; j < pointCount; ++j)
+      {
+        std::string pointName;
+        i >> pointName;
+        if (j == 0)
+        {
+          newGraph.points->val = pointName;
+          newGraph.points->next = nullptr;
+          newGraph.pointCount = 1;
+        }
+        else
+        {
+          it.insert(pointName);
+          newGraph.pointCount++;
+        }
+      }
     }
     graphtable.add(name, newGraph);
   }
@@ -703,6 +740,8 @@ int main(int argc, char* argv[])
     }
     catch (const std::logic_error& e) {
       std::cout << "<INVALID COMMAND>\n";
+      auto toignore = std::numeric_limits<std::streamsize>::max();
+      std::cin.ignore(toignore, '\n');
     }
   }
   if (!std::cin.eof())
