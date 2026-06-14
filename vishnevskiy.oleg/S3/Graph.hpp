@@ -136,18 +136,16 @@ namespace vishnevskiy
 
   graph::~graph()
   {
+    delete points;
+    points = nullptr;
+
     using vHt = size_t(*)(const vishnevskiy::vertex&);
     using vEqt = bool(*)(const vishnevskiy::vertex&, const vishnevskiy::vertex&);
     vishnevskiy::tableIt<vertex, vishnevskiy::List<int>*, vHt, vEqt> it(&vertexes);
     while (it.hasNext())
     {
-      if (points)
-      {
-        delete it.val();
-        it.next();
-        delete points;
-        points = nullptr;
-      }
+      delete it.val();
+      it.next();
     }
   }
 
