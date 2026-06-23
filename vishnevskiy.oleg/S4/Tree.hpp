@@ -1,5 +1,5 @@
-#ifndef HASHTABLE_HPP
-#define HASHTABLE_HPP
+#ifndef TREE_HPP
+#define TREE_HPP
 
 #include <cstddef>
 #include <stdexcept>
@@ -45,7 +45,7 @@ namespace vishnevskiy
       size_t height;
     public:
       Node();
-      Node(const Key& k, const Value& v, Node* p);
+      Node(const Key* k, const Value* v, Node* p);
       ~Node();
       friend class BSTree<Key, Value, Compare>;
   };
