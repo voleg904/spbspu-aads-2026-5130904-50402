@@ -17,6 +17,8 @@ namespace vishnevskiy
     public:
       void next();
       void prev();
+      void fallLeft();
+      void fallRight();
       Value getVal();
       Node<Key, Value>* getNode() const;
   };
@@ -29,6 +31,8 @@ namespace vishnevskiy
     public:
       void next();
       void prev();
+      void fallLeft();
+      void fallRight();
       const Value getVal() const;
       const Node<Key, Value>* getNode() const;
   };
@@ -47,6 +51,7 @@ namespace vishnevskiy
       Node();
       Node(const Key* k, const Value* v, Node* p);
       ~Node();
+      bool isLeaf() const;
       friend class BSTree<Key, Value, Compare>;
   };
 
