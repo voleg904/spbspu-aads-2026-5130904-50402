@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <stdexcept>
+#include <iostream>
 
 #include "Tree.hpp"
 
@@ -19,7 +20,7 @@ namespace vishnevskiy
   {}
 
   template <class Key, class Value>
-  Node<Key, Value>::Node(const Key* k, const Value* v, Node* p):
+  Node<Key, Value>::Node(Key* k, Value* v, Node* p):
     key(k),
     val(v),
     parent(p),
@@ -41,9 +42,23 @@ namespace vishnevskiy
   }
 
   template <class Key, class Value>
-  BSIterator<Key, Value>::BSIterator(const Node<Key, Value>* node):
+  BSIterator<Key, Value>::BSIterator(Node<Key, Value>* node):
     curr(node)
   {}
+
+  template <class Key, class Value, class Compare>
+  BSIterator<Key, Value> BSTree<Key, Value, Compare>::begin()
+  {
+    Node<Key, Value>* curr = fakeRoot -> right;
+    if (curr && !curr -> isLeaf())
+    {
+      while (curr -> left && !curr -> left -> isLeaf())
+      {
+        curr = curr -> left;
+      }
+    }
+    return BSIterator<Key, Value>(curr);
+  }
 
   template <class Key, class Value>
   void BSIterator<Key, Value>::fallRight()
@@ -146,6 +161,20 @@ namespace vishnevskiy
     curr(node)
   {}
 
+  template <class Key, class Value, class Compare>
+  BSConstIterator<Key, Value> BSTree<Key, Value, Compare>::beginConst() const
+  {
+    const Node<Key, Value>* curr = fakeRoot -> right;
+    if (curr && !curr -> isLeaf())
+    {
+      while (curr -> left && !curr -> left -> isLeaf())
+      {
+        curr = curr -> left;
+      }
+    }
+    return BSConstIterator<Key, Value>(curr);
+  }
+
   template <class Key, class Value>
   void BSConstIterator<Key, Value>::fallRight()
   {
@@ -236,6 +265,17 @@ namespace vishnevskiy
     return curr;
   }
 
+  template <class Key, class Value, class Compare>
+  void BSTree<Key, Value, Compare>::destroyTree(Node<Key, Value>* node)
+  {
+    if (node && !(node->isLeaf()))
+    {
+      destroyTree(node->left);
+      destroyTree(node->right);
+      delete node;
+    }
+  }
+
   template <class Key, class Value>
   bool BSConstIterator<Key, Value>::isEnd() const
   {
@@ -243,8 +283,9 @@ namespace vishnevskiy
   }
 
   template <class Key, class Value, class Compare>
-  BSTree<Key, Value, Compare>::BSTree():
-    nodes(0)
+  BSTree<Key, Value, Compare>::BSTree(Compare c):
+    nodes(0),
+    cmp(c)
   {
     fakeLeaf = new Node<Key, Value>();
     fakeLeaf -> left = fakeLeaf;
@@ -252,6 +293,8 @@ namespace vishnevskiy
     fakeLeaf -> parent = fakeLeaf;
     fakeLeaf -> height = 0;
     fakeRoot = new Node<Key, Value>();
+    fakeRoot -> key = nullptr;
+    fakeRoot -> val = nullptr;
     fakeRoot -> left = fakeLeaf;
     fakeRoot -> right = fakeLeaf;
     fakeRoot -> parent = nullptr;
@@ -261,39 +304,7 @@ namespace vishnevskiy
   template <class Key, class Value, class Compare>
   BSTree<Key, Value, Compare>::~BSTree()
   {
-    Node<Key, Value>* curr = fakeRoot -> right;
-    if (curr && !curr -> isLeaf())
-    {
-      while (!curr -> isLeaf())
-      {
-        if (curr -> left && !curr -> left -> isLeaf())
-        {
-          curr = curr -> left;
-        } 
-        else if (curr -> right && !curr -> right -> isLeaf())
-        {
-          curr = curr -> right;
-        }
-        else
-        {
-          Node<Key, Value>* parent = curr -> parent;
-          if (parent -> left == curr)
-          {
-            parent -> left = fakeLeaf;
-          }
-          else if (parent -> right == curr)
-          {
-            parent -> right = fakeLeaf;
-          }
-          delete curr;
-          curr = parent;
-          if (curr == fakeRoot)
-          {
-            break;
-          }
-        }
-      }
-    }
+    destroyTree(fakeRoot->right);
     delete fakeRoot;
     delete fakeLeaf;
   }
@@ -315,7 +326,8 @@ namespace vishnevskiy
 
   template <class Key, class Value, class Compare>
   BSTree<Key, Value, Compare>::BSTree(const BSTree& other):
-    nodes(0)
+    nodes(0),
+    cmp(other.cmp)
   {
     fakeLeaf = new Node<Key, Value>();
     fakeLeaf -> left = fakeLeaf;
@@ -323,6 +335,8 @@ namespace vishnevskiy
     fakeLeaf -> parent = fakeLeaf;
     fakeLeaf -> height = 0;
     fakeRoot = new Node<Key, Value>();
+    fakeRoot -> key = nullptr;
+    fakeRoot -> val = nullptr;
     fakeRoot -> left = fakeLeaf;
     fakeRoot -> right = fakeLeaf;
     fakeRoot -> parent = nullptr;
@@ -339,12 +353,45 @@ namespace vishnevskiy
   {
     if (this != &other)
     {
-      destroyTree(fakeRoot -> right);
+      cmp = other.cmp;
+      Node<Key, Value>* curr = fakeRoot -> right;
+      if (curr && !curr -> isLeaf())
+      {
+        while (!curr -> isLeaf())
+        {
+          if (curr -> left && !curr -> left -> isLeaf())
+          {
+            curr = curr -> left;
+          } 
+          else if (curr->right && !curr -> right -> isLeaf())
+          {
+            curr = curr -> right;
+          }
+          else
+          {
+            Node<Key, Value>* parent = curr -> parent;
+            if (parent -> left == curr)
+            {
+              parent -> left = fakeLeaf;
+            }
+            else if (parent -> right == curr)
+            {
+              parent -> right = fakeLeaf;
+            }
+            delete curr;
+            curr = parent;
+            if (curr == fakeRoot)
+            {
+              break;
+            }
+          }
+        }
+      }
       fakeRoot -> right = fakeLeaf;
       nodes = 0;
       if (other.fakeRoot -> right && !other.fakeRoot -> right -> isLeaf())
       {
-        fakeRoot -> right = copyTree(other.fakeRoot -> right, fakeRoot);
+        fakeRoot -> right = copy(other.fakeRoot -> right, fakeRoot);
         nodes = other.nodes;
       }
     }
@@ -357,6 +404,10 @@ namespace vishnevskiy
     Node<Key, Value>* curr = fakeRoot -> right;
     while (curr && !curr -> isLeaf())
     {
+      if (curr->key == nullptr)
+      {
+        return fakeLeaf;
+      }
       if (cmp(k, *(curr->key)))
       {
         curr = curr -> left;
@@ -400,7 +451,7 @@ namespace vishnevskiy
   }
 
   template <class Key, class Value, class Compare>
-  size_t BSTree<Key, Value, Compare>::getBalance(Node<Key, Value>* node)
+  int BSTree<Key, Value, Compare>::getBalance(Node<Key, Value>* node)
   {
     if (node && !(node -> isLeaf()))
     {
@@ -416,10 +467,11 @@ namespace vishnevskiy
       }
       return heightL - heightR;
     }
+    throw std::logic_error("No node found");
   }
 
   template <class Key, class Value, class Compare>
-  BSConstIterator<Key, Value> BSTree<Key, Value, Compare>::rotateLeft(BSConstIterator<Key, Value> it)
+  BSIterator<Key, Value> BSTree<Key, Value, Compare>::rotateLeft(BSIterator<Key, Value> it)
   {
     Node<Key, Value>* rotParent = it.getNode();
     if (!rotParent || rotParent -> isLeaf())
@@ -431,17 +483,22 @@ namespace vishnevskiy
     {
       return it;
     }
-    rotChild -> parent = rotParent -> parent;
-    rotChild -> left = rotParent;
-    rotParent -> parent = rotChild;
-    rotParent -> right = rotChild -> left;
+    Node<Key, Value>* oldLeft = rotChild->left;
+    rotChild->parent = rotParent->parent;
+    rotChild->left = rotParent;
+    rotParent->parent = rotChild;
+    rotParent->right = oldLeft;
+    if (oldLeft && !oldLeft->isLeaf())
+    {
+      oldLeft->parent = rotParent;
+    }
     if (rotChild -> left && !rotChild -> left -> isLeaf())
     {
       rotChild -> left -> parent = rotParent;
     }
     updateHeight(rotParent);
     updateHeight(rotChild);
-    if (rotChild -> parent == fakeRoot)
+    if (rotParent == fakeRoot -> right)
     {
       fakeRoot -> right = rotChild;
     }
@@ -453,11 +510,11 @@ namespace vishnevskiy
     {
       rotChild -> parent -> right = rotChild;
     }
-    return BSConstIterator<Key, Value>(rotChild);
+    return BSIterator<Key, Value>(rotChild);
   }
 
   template <class Key, class Value, class Compare>
-  BSConstIterator<Key, Value> BSTree<Key, Value, Compare>::rotateRight(BSConstIterator<Key, Value> it)
+  BSIterator<Key, Value> BSTree<Key, Value, Compare>::rotateRight(BSIterator<Key, Value> it)
   {
     Node<Key, Value>* rotParent = it.getNode();
     if (!rotParent || rotParent -> isLeaf())
@@ -469,17 +526,22 @@ namespace vishnevskiy
     {
       return it;
     }
-    rotChild -> parent = rotParent -> parent;
-    rotChild -> right = rotParent;
-    rotParent -> parent = rotChild;
-    rotParent -> left = rotChild -> right;
+    Node<Key, Value>* oldRight = rotChild->right;
+    rotChild->parent = rotParent->parent;
+    rotChild->right = rotParent;
+    rotParent->parent = rotChild;
+    rotParent->left = oldRight;
+    if (oldRight && !oldRight->isLeaf())
+    {
+      oldRight->parent = rotParent;
+    }
     if (rotChild -> right && !rotChild -> right -> isLeaf())
     {
       rotChild -> right -> parent = rotParent;
     }
     updateHeight(rotParent);
     updateHeight(rotChild);
-    if (rotChild -> parent == fakeRoot)
+    if (rotParent == fakeRoot -> right)
     {
       fakeRoot -> right = rotChild;
     }
@@ -491,41 +553,41 @@ namespace vishnevskiy
     {
       rotChild -> parent -> right = rotChild;
     }
-    return BSConstIterator<Key, Value>(rotChild);
+    return BSIterator<Key, Value>(rotChild);
   }
 
   template <class Key, class Value, class Compare>
-  BSConstIterator<Key, Value> BSTree<Key, Value, Compare>::rotateLargeLeft(BSConstIterator<Key, Value> it)
+  BSIterator<Key, Value> BSTree<Key, Value, Compare>::rotateLargeLeft(BSIterator<Key, Value> it)
   {
     Node<Key, Value>* rotParent = it.getNode();
     if (!rotParent || rotParent -> isLeaf())
     {
       return it;
     }
-    BSConstIterator<Key, Value> newLeft = rotateLeft(BSConstIterator<Key, Value>(rotParent -> left));
+    BSIterator<Key, Value> newLeft = rotateLeft(BSIterator<Key, Value>(rotParent -> left));
     rotParent -> left = newLeft.getNode();
     if (rotParent -> left && !rotParent -> left -> isLeaf())
     {
       rotParent -> left -> parent = rotParent;
     }
-    return rotateRight(BSConstIterator<Key, Value>(rotParent));
+    return rotateRight(BSIterator<Key, Value>(rotParent));
   }
 
   template <class Key, class Value, class Compare>
-  BSConstIterator<Key, Value> BSTree<Key, Value, Compare>::rotateLargeRight(BSConstIterator<Key, Value> it)
+  BSIterator<Key, Value> BSTree<Key, Value, Compare>::rotateLargeRight(BSIterator<Key, Value> it)
   {
     Node<Key, Value>* rotParent = it.getNode();
     if (!rotParent || rotParent -> isLeaf())
     {
       return it;
     }
-    BSConstIterator<Key, Value> newRight = rotateRight(BSConstIterator<Key, Value>(rotParent -> right));
+    BSIterator<Key, Value> newRight = rotateRight(BSIterator<Key, Value>(rotParent -> right));
     rotParent -> right = newRight.getNode();
     if (rotParent -> right && !rotParent -> right -> isLeaf())
     {
       rotParent -> right -> parent = rotParent;
     }
-    return rotateLeft(BSConstIterator<Key, Value>(rotParent));
+    return rotateLeft(BSIterator<Key, Value>(rotParent));
   }
 
   template <class Key, class Value, class Compare>
@@ -537,82 +599,74 @@ namespace vishnevskiy
   template <class Key, class Value, class Compare>
   void BSTree<Key, Value, Compare>::push(const Key& k, const Value& v)
   {
-    Node<Key, Value>* find = findByKey(k);
-    if (find != fakeLeaf)
+    Node<Key, Value>* curr = fakeRoot->right;
+    Node<Key, Value>* par = fakeRoot;
+    while (!curr->isLeaf())
     {
-      delete find -> val;
-      find -> val = new Value(v);
-      return;
-    }
-    Key* newKey = new Key(k);
-    Value* newVal = new Value(v);
-    Node<Key, Value>* newNode = new Node<Key, Value>(newKey, newVal, nullptr);
-    newNode -> left = fakeLeaf;
-    newNode -> right = fakeLeaf;
-    if (fakeRoot -> right -> isLeaf())
-    {
-      newNode -> parent = fakeRoot;
-      fakeRoot -> right = newNode;
-      nodes++;
-      return;
-    }
-    Node<Key, Value>* curr = fakeRoot -> right;
-    while (!curr -> isLeaf())
-    {
-      if (cmp(k, *(curr -> key)))
+      par = curr;
+      if (cmp(k, *(curr->key)))
       {
-        if (curr -> left -> isLeaf())
-        {
-          curr -> left = newNode;
-          newNode -> parent = curr;
-          break;
-        }
-        curr = curr -> left;
+        curr = curr->left;
+      }
+      else if (cmp(*(curr->key), k))
+      {
+        curr = curr->right;
       }
       else
       {
-        if (curr -> right -> isLeaf())
-        {
-          curr -> right = newNode;
-          newNode -> parent = curr;
-          break;
-        }
-        curr = curr -> right;
+        delete curr->val;
+        curr->val = new Value(v);
+        return;
       }
     }
+    Key* newKey = new Key(k);
+    Value* newVal = new Value(v);
+    Node<Key, Value>* newNode = new Node<Key, Value>(newKey, newVal, par);
+    newNode->left = fakeLeaf;
+    newNode->right = fakeLeaf;
+    if (par == fakeRoot)
+    {
+      fakeRoot->right = newNode;
+    }
+    else if (cmp(k, *(par->key)))
+    {
+      par->left = newNode;
+    }
+    else
+    {
+      par->right = newNode;
+    }
     nodes++;
-    Node<Key, Value>* newPar = newNode -> parent;
-    while (newPar && newPar != fakeRoot)
+    Node<Key, Value>* newPar = newNode->parent;
+    while (newPar != fakeRoot)
     {
       updateHeight(newPar);
       int balance = getBalance(newPar);
       if (balance > 1)
       {
-        Node<Key, Value>* childL = newPar -> left;
-        if (getBalance(childL) >= 0)
+        if (getBalance(newPar->left) >= 0)
         {
-          rotateRight(BSConstIterator<Key, Value>(newPar));
+          rotateRight(BSIterator<Key, Value>(newPar));
         }
         else
         {
-          rotateLargeLeft(BSConstIterator<Key, Value>(newPar));
+          rotateLargeLeft(BSIterator<Key, Value>(newPar));
         }
         break;
       }
       else if (balance < -1)
       {
-        Node<Key, Value>* childR = newPar -> right;
-        if (getBalance(childR) <= 0)
+        if (getBalance(newPar->right) <= 0)
         {
-          rotateLeft(BSConstIterator<Key, Value>(newPar));
+          rotateLeft(BSIterator<Key, Value>(newPar));
         }
         else
         {
-          rotateLargeRight(BSConstIterator<Key, Value>(newPar));
+          rotateLargeRight(BSIterator<Key, Value>(newPar));
         }
         break;
       }
-      newPar = newPar -> parent;
+      newPar = newPar->parent;
     }
   }
 
@@ -680,22 +734,22 @@ namespace vishnevskiy
         {
           if (getBalance(newPar -> left) >= 0)
           {
-            rotateRight(BSConstIterator<Key, Value>(newPar));
+            rotateRight(BSIterator<Key, Value>(newPar));
           }
           else
           {
-            rotateLargeLeft(BSConstIterator<Key, Value>(newPar));
+            rotateLargeLeft(BSIterator<Key, Value>(newPar));
           }
         }
         else if (balance < -1)
         {
           if (getBalance(newPar -> right) <= 0)
           {
-            rotateLeft(BSConstIterator<Key, Value>(newPar));
+            rotateLeft(BSIterator<Key, Value>(newPar));
           }
           else
           {
-            rotateLargeRight(BSConstIterator<Key, Value>(newPar));
+            rotateLargeRight(BSIterator<Key, Value>(newPar));
           }
         }
         newPar = newPar->parent;
@@ -735,22 +789,22 @@ namespace vishnevskiy
       {
         if (getBalance(newPar -> left) >= 0)
         {
-          rotateRight(BSConstIterator<Key, Value>(newPar));
+          rotateRight(BSIterator<Key, Value>(newPar));
         }
         else
         {
-          rotateLargeLeft(BSConstIterator<Key, Value>(newPar));
+          rotateLargeLeft(BSIterator<Key, Value>(newPar));
         }
       }
       else if (balance < -1)
       {
         if (getBalance(newPar -> right) <= 0)
         {
-          rotateLeft(BSConstIterator<Key, Value>(newPar));
+          rotateLeft(BSIterator<Key, Value>(newPar));
         }
         else
         {
-          rotateLargeRight(BSConstIterator<Key, Value>(newPar));
+          rotateLargeRight(BSIterator<Key, Value>(newPar));
         }
       }
       newPar = newPar -> parent;
@@ -759,7 +813,7 @@ namespace vishnevskiy
   }
 
   template <class Key, class Value, class Compare>
-  size_t BSTree<Key, Value, Compare>::height() const
+  int BSTree<Key, Value, Compare>::height() const
   {
     if (fakeRoot -> right -> isLeaf())
     {
@@ -769,7 +823,7 @@ namespace vishnevskiy
   }
 
   template <class Key, class Value, class Compare>
-  size_t BSTree<Key, Value, Compare>::height(BSConstIterator<Key, Value> it) const
+  int BSTree<Key, Value, Compare>::height(BSIterator<Key, Value> it) const
   {
     const Node<Key, Value>* node = it.getNode();
     if (!node || node -> isLeaf())
