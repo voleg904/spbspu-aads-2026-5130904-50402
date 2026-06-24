@@ -10,31 +10,40 @@ namespace vishnevskiy
   class BSTree;
 
   template <class Key, class Value>
+  struct Node;
+
+  template <class Key, class Value>
   class BSIterator
   {
     private:
       Node<Key, Value>* curr;
     public:
+      BSIterator(const Node<Key, Value>* node);
       void next();
       void prev();
       void fallLeft();
       void fallRight();
-      Value getVal();
-      Node<Key, Value>* getNode() const;
+      Value* getVal();
+      Key* getKey();
+      Node<Key, Value>* getNode();
+      bool isEnd() const;
   };
 
   template <class Key, class Value>
   class BSConstIterator
   {
     private:
-      BSTree<Key, Value, Compare>* curr;
+      Node<Key, Value>* curr;
     public:
+      BSConstIterator(const Node<Key, Value>* node);
       void next();
       void prev();
       void fallLeft();
       void fallRight();
-      const Value getVal() const;
+      const Value* getVal() const;
+      const Key* getKey() const;
       const Node<Key, Value>* getNode() const;
+      bool isEnd() const;
   };
 
   template <class Key, class Value>
@@ -52,7 +61,8 @@ namespace vishnevskiy
       Node(const Key* k, const Value* v, Node* p);
       ~Node();
       bool isLeaf() const;
-      friend class BSTree<Key, Value, Compare>;
+      template <class K, class V, class C>
+      friend class BSTree;
   };
 
   template <class Key, class Value, class Compare>
@@ -64,23 +74,27 @@ namespace vishnevskiy
       Compare cmp;
       size_t nodes;
       Node<Key, Value>* findByKey(const Key& k) const;
+      void updateHeight(Node<Key, Value>* node);
+      size_t calcBalance(Node<Key, Value>* node);
+      Node<Key, Value>* copy(Node<Key, Value>* node,Node<Key, Value>* parent);
     public:
       BSTree();
       ~BSTree();
       BSTree(const BSTree& other);
       BSTree& operator=(const BSTree& other);
       bool has(const Key& k) const;
-      void push(Key k, Value v);
-      Value get(Key k);
-      Value drop(Key k);
+      void push(const Key& k, const Value& v);
+      size_t getBalance(Node<Key, Value>* node);
+      Value get(const Key& k);
+      Value drop(const Key& k);
 
-      using const_iterator = BSTConstIterator< Key, Value >;
+      using const_iterator = BSConstIterator<Key, Value>;
       const_iterator rotateLeft(const_iterator it);
       const_iterator rotateRight(const_iterator it);
       const_iterator rotateLargeLeft(const_iterator it);
       const_iterator rotateLargeRight(const_iterator it);
-      size_t height(const_iterator it);
-      size_t height();
+      size_t height(const_iterator it) const;
+      size_t height() const;
   };
 }
 
