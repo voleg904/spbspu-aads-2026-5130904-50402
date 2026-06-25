@@ -49,7 +49,6 @@ void load(const std::string& filename, dsTree_t& tree)
 
 void print(std::ostream& o, std::istream& in, dsTree_t& tree)
 {
-  int d = 0;
   std::string datasetName;
   in >> datasetName;
   if (!tree.has(datasetName))
@@ -67,7 +66,7 @@ void print(std::ostream& o, std::istream& in, dsTree_t& tree)
   o << "\n";
 }
 
-void complement(std::ostream& o, std::istream& in, dsTree_t& tree)
+void complement(std::ostream&, std::istream& in, dsTree_t& tree)
 {
   std::string newDataset, dataset1, dataset2;
   in >> newDataset >> dataset1 >> dataset2;
@@ -91,7 +90,7 @@ void complement(std::ostream& o, std::istream& in, dsTree_t& tree)
   tree.push(newDataset, result);
 }
 
-void intersect(std::ostream& o, std::istream& in, dsTree_t& tree)
+void intersect(std::ostream&, std::istream& in, dsTree_t& tree)
 {
   std::string newDataset, dataset1, dataset2;
   in >> newDataset >> dataset1 >> dataset2;
@@ -115,7 +114,7 @@ void intersect(std::ostream& o, std::istream& in, dsTree_t& tree)
   tree.push(newDataset, result);
 }
 
-void unionCmd(std::ostream& o, std::istream& in, dsTree_t& tree)
+void unionCmd(std::ostream&, std::istream& in, dsTree_t& tree)
 {
   std::string newDataset, dataset1, dataset2;
   in >> newDataset >> dataset1 >> dataset2;
