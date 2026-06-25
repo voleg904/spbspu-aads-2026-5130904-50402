@@ -87,6 +87,10 @@ void complement(std::ostream&, std::istream& in, dsTree_t& tree)
     }
     it.next();
   }
+  if (tree.has(newDataset))
+  {
+    delete tree.get(newDataset);
+  }
   tree.push(newDataset, result);
 }
 
@@ -110,6 +114,10 @@ void intersect(std::ostream&, std::istream& in, dsTree_t& tree)
       result -> push(key, *it.getVal());
     }
     it.next();
+  }
+  if (tree.has(newDataset))
+  {
+    delete tree.get(newDataset);
   }
   tree.push(newDataset, result);
 }
@@ -141,6 +149,10 @@ void unionCmd(std::ostream&, std::istream& in, dsTree_t& tree)
       result -> push(key, *it.getVal());
     }
     it.next();
+  }
+  if (tree.has(newDataset))
+  {
+    delete tree.get(newDataset);
   }
   tree.push(newDataset, result);
 }
