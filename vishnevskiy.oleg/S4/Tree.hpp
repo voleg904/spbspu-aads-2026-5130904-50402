@@ -82,6 +82,7 @@ namespace vishnevskiy
     public:
       BSTree(Compare c);
       ~BSTree();
+      void clear();
       BSTree(const BSTree& other);
       BSTree& operator=(const BSTree& other);
       BSIterator<Key, Value> begin();
