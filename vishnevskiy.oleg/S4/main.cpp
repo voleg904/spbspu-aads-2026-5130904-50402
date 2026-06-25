@@ -56,8 +56,13 @@ void print(std::ostream& o, std::istream& in, dsTree_t& tree)
     throw std::logic_error("Cannot find name!");
   }
   tree_t* dsTree = tree.get(datasetName);
-  o << datasetName;
   vishnevskiy::BSIterator<int, std::string> it = dsTree->begin();
+  if (it.isEnd())
+  {
+    o << "<EMPTY>\n";
+    return;
+  }
+  o << datasetName;
   while (!it.isEnd())
   {
     o << " " << *it.getKey() << " " << *it.getVal();
