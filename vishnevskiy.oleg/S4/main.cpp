@@ -126,7 +126,7 @@ void unionCmd(std::ostream& o, std::istream& in, dsTree_t& tree)
   tree_t* ds1 = tree.get(dataset1);
   tree_t* ds2 = tree.get(dataset2);
   tree_t* result = new tree_t(intComp);
-  
+
   vishnevskiy::BSIterator<int, std::string> it = ds1->begin();
   while (!it.isEnd())
   {

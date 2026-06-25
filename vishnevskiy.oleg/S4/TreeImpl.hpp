@@ -364,7 +364,7 @@ namespace vishnevskiy
           if (curr -> left && !curr -> left -> isLeaf())
           {
             curr = curr -> left;
-          } 
+          }
           else if (curr->right && !curr -> right -> isLeaf())
           {
             curr = curr -> right;
@@ -708,7 +708,7 @@ namespace vishnevskiy
         newLeaf = toDelete -> right;
       }
       newLeaf -> parent = toDelete -> parent;
-      
+
       if (toDelete -> parent -> left == toDelete)
       {
         toDelete -> parent -> left = newLeaf;
