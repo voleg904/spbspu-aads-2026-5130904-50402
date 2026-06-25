@@ -306,9 +306,24 @@ namespace vishnevskiy
   template <class Key, class Value, class Compare>
   BSTree<Key, Value, Compare>::~BSTree()
   {
-    destroyTree(fakeRoot->right);
+    clear();
     delete fakeRoot;
     delete fakeLeaf;
+  }
+
+  template <class Key, class Value, class Compare>
+  void BSTree<Key, Value, Compare>::clear()
+  {
+    BSIterator<Key, Value> it = begin();
+    while (!it.isEnd())
+    {
+      delete it.getVal();
+      it.getNode()->val = nullptr;
+      it.next();
+    }
+    destroyTree(fakeRoot->right);
+    fakeRoot->right = fakeLeaf;
+    nodes = 0;
   }
 
   template <class Key, class Value, class Compare>
