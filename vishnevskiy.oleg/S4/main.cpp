@@ -200,5 +200,12 @@ int main(int argc, char* argv[])
     std::cerr << "Bad input!\n";
     return 1;
   }
+
+  vishnevskiy::BSIterator<std::string, tree_t*> it = tree.begin();
+  while (!it.isEnd())
+  {
+    delete *(it.getVal());
+    it.next();
+  }
   return 0;
 }
