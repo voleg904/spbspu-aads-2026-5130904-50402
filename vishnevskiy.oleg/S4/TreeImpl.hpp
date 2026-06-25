@@ -96,7 +96,7 @@ namespace vishnevskiy
         return;
       }
       Node<Key, Value>* parent = curr -> parent;
-      while (parent && curr == parent -> right)
+      while (parent && curr == parent -> right && !parent -> isLeaf())
       {
         curr = parent;
         parent = parent -> parent;
@@ -133,6 +133,7 @@ namespace vishnevskiy
     {
       return curr -> val;
     }
+    return nullptr;
   }
 
   template <class Key, class Value>
@@ -142,6 +143,7 @@ namespace vishnevskiy
     {
       return curr -> key;
     }
+    return nullptr;
   }
 
   template <class Key, class Value>
@@ -492,10 +494,6 @@ namespace vishnevskiy
     {
       oldLeft->parent = rotParent;
     }
-    if (rotChild -> left && !rotChild -> left -> isLeaf())
-    {
-      rotChild -> left -> parent = rotParent;
-    }
     updateHeight(rotParent);
     updateHeight(rotChild);
     if (rotParent == fakeRoot -> right)
@@ -534,10 +532,6 @@ namespace vishnevskiy
     if (oldRight && !oldRight->isLeaf())
     {
       oldRight->parent = rotParent;
-    }
-    if (rotChild -> right && !rotChild -> right -> isLeaf())
-    {
-      rotChild -> right -> parent = rotParent;
     }
     updateHeight(rotParent);
     updateHeight(rotChild);

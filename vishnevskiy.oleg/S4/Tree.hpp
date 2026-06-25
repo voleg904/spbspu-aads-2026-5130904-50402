@@ -63,6 +63,8 @@ namespace vishnevskiy
       bool isLeaf() const;
       template <class K, class V, class C>
       friend class BSTree;
+      friend class BSIterator<Key, Value>;
+      friend class BSConstIterator<Key, Value>;
   };
 
   template <class Key, class Value, class Compare>
