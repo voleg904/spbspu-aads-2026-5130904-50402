@@ -286,8 +286,8 @@ namespace vishnevskiy
 
   template <class Key, class Value, class Compare>
   BSTree<Key, Value, Compare>::BSTree(Compare c):
-    nodes(0),
-    cmp(c)
+    cmp(c),
+    nodes(0)
   {
     fakeLeaf = new Node<Key, Value>();
     fakeLeaf -> left = fakeLeaf;
@@ -328,8 +328,8 @@ namespace vishnevskiy
 
   template <class Key, class Value, class Compare>
   BSTree<Key, Value, Compare>::BSTree(const BSTree& other):
-    nodes(0),
-    cmp(other.cmp)
+    cmp(other.cmp),
+    nodes(0)
   {
     fakeLeaf = new Node<Key, Value>();
     fakeLeaf -> left = fakeLeaf;
