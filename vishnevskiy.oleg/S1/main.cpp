@@ -8,7 +8,7 @@
 bool hasDepth(vishnevskiy::LIter<size_t> em, size_t depth)
 {
   size_t d = 0;
-  while (em.curr)
+  while (em.curr_)
   {
     if (depth == d)
     {
@@ -40,7 +40,7 @@ bool printEmbed(vishnevskiy::LIter<size_t> em, size_t depth, size_t& sm, bool& o
     }
     ++em;
   }
-  if (em.curr)
+  if (em.curr_)
   {
     std::cout << em.value();
     if (em.value() > std::numeric_limits<size_t>::max() - sm)
@@ -61,7 +61,7 @@ void printSeq(vishnevskiy::NamedLIter<size_t> lt, size_t depth, size_t* sums, si
   bool f = false;
   size_t sm = 0;
   vishnevskiy::NamedLIter<size_t> currIt = lt;
-  while (currIt.curr)
+  while (currIt.curr_)
   {
     if (currIt.value())
     {
@@ -89,7 +89,7 @@ void printSeq(vishnevskiy::NamedLIter<size_t> lt, size_t depth, size_t* sums, si
 void cleanup(vishnevskiy::NamedLIter<size_t>& lt, vishnevskiy::LIter<size_t>& em, vishnevskiy::NamedList<size_t>* h)
 {
   lt.setCurr(h);
-  while (lt.curr)
+  while (lt.curr_)
   {
     em.set(lt.value());
     em.clear(&em);
@@ -138,7 +138,7 @@ int main()
             cleanup(lIt, embedIt, lhead);
             return 1;
           }
-          lIt.setData(embedIt.curr);
+          lIt.setData(embedIt.curr_);
         }
         else
         {
@@ -199,7 +199,7 @@ int main()
   }
   printNames(lIt);
   std::cout << "\n";
-  if (!embedIt.curr)
+  if (!embedIt.curr_)
   {
     std::cout << 0 << "\n";
     cleanup(lIt, embedIt, lhead);

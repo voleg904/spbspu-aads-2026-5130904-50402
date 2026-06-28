@@ -2,77 +2,112 @@
 #define LISTIMPL_HPP
 #include <cstddef>
 #include <string>
-#include <iostream>
 #include "ListTools.hpp"
 
 namespace vishnevskiy
 {
-  template <class T>
-  List<T>::List():
-    val(T()),
-    next(nullptr)
+  template < class T >
+  List< T >::List():
+    val_(T()),
+    next_(nullptr)
   {}
 
-  template <class T>
-  List<T>::List(T vl, List<T>* nxt):
-    val(vl),
-    next(nxt)
+  template < class T >
+  List< T >::List(T val, List< T >* next):
+    val_(val),
+    next_(next)
   {}
 
-  template <class T>
-  NamedList<T>::NamedList():
-    name(""),
-    data(nullptr),
-    next(nullptr)
-  {}
-
-  template <class T>
-  NamedList<T>::NamedList(std::string nm, List<T>* dt, NamedList<T>* nxt):
-    name(nm),
-    data(dt),
-    next(nxt)
-  {}
-
-  template <class T>
-  LIter<T>::LIter():
-    curr(nullptr)
-  {}
-
-  template <class T>
-  LIter<T>::LIter(List<T>* h):
-    curr(h)
-  {}
-
-  template <class T>
-  T LIter<T>::value()
+  template < class T >
+  List< T >::List(const List< T >& other):
+    val_(other.val_),
+    next_(nullptr)
   {
-    return (curr->val);
-  }
-
-  template <class T>
-  void LIter<T>::set(List<T>* h)
-  {
-    curr = h;
-  }
-
-  template <class T>
-  void LIter<T>::operator++()
-  {
-    set(curr->next);
-  }
-
-  template <class T>
-  bool LIter<T>::hasNext()
-  {
-    if (curr)
+    if (other.next_)
     {
-      return curr -> next;
+      next_ = new List< T >(*other.next_);
+    }
+  }
+
+  template < class T >
+  List< T >& List< T >::operator=(const List< T >& other)
+  {
+    if (this != &other)
+    {
+      val_ = other.val_;
+      delete next_;
+      if (other.next_)
+      {
+        next_ = new List< T >(*other.next_);
+      }
+      else
+      {
+        next_ = nullptr;
+      }
+    }
+    return *this;
+  }
+
+  template < class T >
+  List< T >::~List()
+  {
+    delete next_;
+  }
+
+  template < class T >
+  NamedList< T >::NamedList():
+    name_(""),
+    data_(nullptr),
+    next_(nullptr)
+  {}
+
+  template < class T >
+  NamedList< T >::NamedList(std::string name, List< T >* data, NamedList< T >* next):
+    name_(name),
+    data_(data),
+    next_(next)
+  {}
+
+  template < class T >
+  LIter< T >::LIter():
+    curr_(nullptr)
+  {}
+
+  template < class T >
+  LIter< T >::LIter(List< T >* h):
+    curr_(h)
+  {}
+
+  template < class T >
+  T LIter< T >::value()
+  {
+    return (curr_->val_);
+  }
+
+  template < class T >
+  void LIter< T >::set(List< T >* h)
+  {
+    curr_ = h;
+  }
+
+  template < class T >
+  void LIter< T >::operator++()
+  {
+    set(curr_->next_);
+  }
+
+  template < class T >
+  bool LIter< T >::hasNext()
+  {
+    if (curr_)
+    {
+      return curr_->next_;
     }
     return false;
   }
 
-  template <class T>
-  void LIter<T>::end()
+  template < class T >
+  void LIter< T >::end()
   {
     while (hasNext())
     {
@@ -80,97 +115,97 @@ namespace vishnevskiy
     }
   }
 
-  template <class T>
-  void LIter<T>::insert(T& d)
+  template < class T >
+  void LIter< T >::insert(T& d)
   {
-    List<T>* s = new List<T>{d, nullptr};
-    if (curr)
+    List< T >* s = new List< T >{d, nullptr};
+    if (curr_)
     {
-      s -> next = curr -> next;
-      curr -> next = s;
+      s->next_ = curr_->next_;
+      curr_->next_ = s;
     }
     else
     {
-      curr = s;
+      curr_ = s;
     }
   }
 
-  template <class T>
-  void LIter<T>::clear(LIter<T>* head)
+  template < class T >
+  void LIter< T >::clear(LIter< T >* head)
   {
-    List<T>* c = head -> curr;
+    List< T >* c = head->curr_;
     while (c)
     {
-      List<T>* next = c -> next;
+      List< T >* next = c->next_;
       delete c;
       c = next;
     }
-    head -> curr = nullptr;
+    head->curr_ = nullptr;
   }
 
-  template <class T>
-  template <class C>
-  void LIter<T>::traverse(C func)
+  template < class T >
+  template < class C >
+  void LIter< T >::traverse(C func)
   {
-    while (curr)
+    while (curr_)
     {
-      func(this -> value());
-      ++curr;
+      func(this->value());
+      ++curr_;
     }
   }
 
-  template <class T>
-  NamedLIter<T>::NamedLIter():
-    curr(nullptr)
+  template < class T >
+  NamedLIter< T >::NamedLIter():
+    curr_(nullptr)
   {}
 
-  template <class T>
-  NamedLIter<T>::NamedLIter(NamedList<T>* h):
-    curr(h)
+  template < class T >
+  NamedLIter< T >::NamedLIter(NamedList< T >* h):
+    curr_(h)
   {}
 
-  template <class T>
-  List<T>* NamedLIter<T>::value()
+  template < class T >
+  List< T >* NamedLIter< T >::value()
   {
-    return (curr -> data);
+    return (curr_->data_);
   }
 
-  template <class T>
-  std::string NamedLIter<T>::getName()
+  template < class T >
+  std::string NamedLIter< T >::getName()
   {
-    return curr -> name;
+    return curr_->name_;
   }
 
-  template <class T>
-  void NamedLIter<T>::setCurr(NamedList<T>* h)
+  template < class T >
+  void NamedLIter< T >::setCurr(NamedList< T >* h)
   {
-    curr = h;
+    curr_ = h;
   }
 
-  template <class T>
-  void NamedLIter<T>::operator++()
+  template < class T >
+  void NamedLIter< T >::operator++()
   {
-    setCurr(curr->next);
+    setCurr(curr_->next_);
   }
 
-  template <class T>
-  bool NamedLIter<T>::hasNext()
+  template < class T >
+  bool NamedLIter< T >::hasNext()
   {
-    if (curr)
+    if (curr_)
     {
-      return curr -> next;
+      return curr_->next_;
     }
     return false;
   }
 
-  template <class T>
-  void NamedLIter<T>::setData(List<T>* dta)
+  template < class T >
+  void NamedLIter< T >::setData(List< T >* data)
   {
-    curr -> data = dta;
+    curr_->data_ = data;
   }
 
-  template <class T>
-  void NamedLIter<T>::end()
+  template < class T >
+  void NamedLIter< T >::end()
   {
     while (hasNext())
     {
@@ -178,73 +213,73 @@ namespace vishnevskiy
     }
   }
 
-  template <class T>
-  void NamedLIter<T>::insert(List<T>* d, std::string name)
+  template < class T >
+  void NamedLIter< T >::insert(List< T >* d, std::string name)
   {
-    NamedList<T>* s = new NamedList<T>{name, d, nullptr};
-    if (curr)
+    NamedList< T >* s = new NamedList< T >{name, d, nullptr};
+    if (curr_)
     {
-      s -> next = curr -> next;
-      curr -> next = s;
+      s->next_ = curr_->next_;
+      curr_->next_ = s;
     }
     else
     {
-      curr = s;
+      curr_ = s;
     }
   }
 
-  template <class T>
-  void NamedLIter<T>::clear(NamedLIter<T>* head)
+  template < class T >
+  void NamedLIter< T >::clear(NamedLIter< T >* head)
   {
-    NamedList<T>* c = head -> curr;
+    NamedList< T >* c = head->curr_;
     while (c)
     {
-      NamedList<T>* next = c -> next;
+      NamedList< T >* next = c->next_;
       delete c;
       c = next;
     }
-    head -> curr = nullptr;
+    head->curr_ = nullptr;
   }
 
-  template <class T>
-  template <class C>
-  void NamedLIter<T>::traverse(C func)
+  template < class T >
+  template < class C >
+  void NamedLIter< T >::traverse(C func)
   {
-    while (curr)
+    while (curr_)
     {
-      func(this -> value());
+      func(this->value());
       ++(*this);
     }
   }
 
-  template <class T>
-  LCIter<T>::LCIter():
-    curr(nullptr)
+  template < class T >
+  LCIter< T >::LCIter():
+    curr_(nullptr)
   {}
 
-  template <class T>
-  LCIter<T>::LCIter(const List<T>* h):
-    curr(h)
+  template < class T >
+  LCIter< T >::LCIter(const List< T >* h):
+    curr_(h)
   {}
 
-  template <class T>
-  void LCIter<T>::operator++()
+  template < class T >
+  void LCIter< T >::operator++()
   {
-    curr = curr -> next;
+    curr_ = curr_->next_;
   }
 
-  template <class T>
-  const T* LCIter<T>::value()
+  template < class T >
+  const T* LCIter< T >::value()
   {
-    return *(curr->val);
+    return (curr_->val_);
   }
 
-  template <class T>
-  bool LCIter<T>::hasNext()
+  template < class T >
+  bool LCIter< T >::hasNext()
   {
-    if (curr)
+    if (curr_)
     {
-      return curr -> next;
+      return curr_->next_;
     }
     return false;
   }
