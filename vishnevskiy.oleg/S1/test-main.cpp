@@ -6,7 +6,7 @@ BOOST_AUTO_TEST_CASE(test_empty)
 {
   vishnevskiy::List<int>* t{};
   vishnevskiy::LIter<int> it(t);
-  BOOST_TEST(it.curr == nullptr);
+  BOOST_TEST(it.curr_ == nullptr);
 }
 
 BOOST_AUTO_TEST_CASE(test_value)

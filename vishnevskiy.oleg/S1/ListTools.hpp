@@ -30,7 +30,6 @@ namespace vishnevskiy
       List(T val, List< T >* next);
       List(const List< T >& other);
       List< T >& operator=(const List< T >& other);
-      ~List();
   };
 
   template < class T >

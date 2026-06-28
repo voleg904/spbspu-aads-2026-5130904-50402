@@ -49,12 +49,6 @@ namespace vishnevskiy
   }
 
   template < class T >
-  List< T >::~List()
-  {
-    delete next_;
-  }
-
-  template < class T >
   NamedList< T >::NamedList():
     name_(""),
     data_(nullptr),
