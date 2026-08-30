@@ -34,6 +34,11 @@ namespace vishnevskiy
     }
   }
 
+  bool DictionaryManager::exists(const std::string& dictName) const
+  {
+    return dictionaries.has(dictName);
+  }
+
   void DictionaryManager::load(const std::string& filename, const std::string& dictName)
   {
     if (exists(dictName))
