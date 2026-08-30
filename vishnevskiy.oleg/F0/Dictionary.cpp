@@ -150,4 +150,16 @@ namespace vishnevskiy
       throw;
     }
   }
+
+  void DictionaryManager::deleteDict(const std::string& dictName)
+  {
+    if (!exists(dictName))
+    {
+      throw std::runtime_error("Dictionary does not exist");
+    }
+    dict_t* dict = dictionaries.at(dictName);
+    delete dict;
+    dictionaries.drop(dictName);
+  }
+
 }
