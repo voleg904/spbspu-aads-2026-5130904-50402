@@ -162,4 +162,66 @@ namespace vishnevskiy
     dictionaries.drop(dictName);
   }
 
+  void DictionaryManager::merge(const std::string& dict1, const std::string& dict2, const std::string& result)
+  {
+    if (!dictExists(dict1) || !dictExists(dict2))
+    {
+      throw std::runtime_error("Dictionaries do not exist");
+    }
+    if (dictExists(result))
+    {
+      throw std::runtime_error("Dictionary already exists");
+    }
+    dict_t* dict1Ptr = dictionaries.at(dict1);
+    dict_t* dict2Ptr = dictionaries.at(dict2);
+    dict_t* resultDict = new dict_t(dict1Ptr->getCapacity() + dict2Ptr->getCapacity(), hashFunc, eqFunc);
+
+    try
+    {
+      vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> it1(dict1Ptr);
+      while (it1.hasNext())
+      {
+        std::string key = it1.key();
+        List<std::string> value;
+        copyList(value, it1.val());
+        resultDict->add(key, value);
+        it1.next();
+      }
+
+      vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> it2(dict2Ptr);
+      while (it2.hasNext())
+      {
+        std::string key = it2.key();
+        if (resultDict->has(key))
+        {
+          List<std::string> existing = resultDict->at(key);
+          List<std::string> newList = it2.val();
+          
+          LIter<std::string> itNew(const_cast<List<std::string>*>(&newList));
+          while (itNew.curr)
+          {
+            addTranslationToList(existing, itNew.value());
+            ++itNew;
+          }
+
+          resultDict->add(key, existing);
+        }
+        else
+        {
+          List<std::string> value;
+          copyList(value, it2.val());
+          resultDict->add(key, value);
+        }
+        it2.next();
+      }
+
+      dictionaries.add(result, resultDict);
+    }
+    catch (...)
+    {
+      delete resultDict;
+      throw;
+    }
+  }
+
 }
