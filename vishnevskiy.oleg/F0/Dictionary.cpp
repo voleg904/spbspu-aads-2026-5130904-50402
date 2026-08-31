@@ -34,9 +34,89 @@ namespace vishnevskiy
     }
   }
 
+  std::string DictionaryManager::makeKey(const std::string& word, const std::string& part)
+  {
+    return word + "|" + part;
+  }
+
+  std::pair<std::string, std::string> DictionaryManager::splitKey(const std::string& key)
+  {
+    size_t part = key.find('|');
+    return std::make_pair(key.substr(0, part), key.substr(part + 1));
+  }
+
   bool DictionaryManager::exists(const std::string& dictName) const
   {
     return dictionaries.has(dictName);
+  }
+
+  bool DictionaryManager::isValid(const std::string& part)
+  {
+    static const std::string validParts[] = {"noun", "verb", "adjective", "adverb", "pronoun", "preposition", "conjunction", "interjection"};
+    static const size_t numParts = 8;
+    for (size_t i = 0; i < numParts; ++i)
+    {
+      if (part == validParts[i])
+      {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  bool DictionaryManager::isInList(const List<std::string>& list, const std::string& translation) const
+  {
+    LCIter<std::string> it(&list);
+    while (it.hasNext())
+    {
+      if (*(it.value()) == translation)
+        return true;
+      ++it;
+    }
+    return false;
+  }
+
+  void DictionaryManager::addToList(List<std::string>& list, const std::string& translation)
+  {
+    if (!isInList(list, translation))
+    {
+      LIter<std::string> it(&list);
+      it.end();
+      it.insert(translation);
+    }
+  }
+
+  void DictionaryManager::copyList(List<std::string>& dest, const List<std::string>& src)
+  {
+    dest.val = src.val;
+    dest.next = nullptr;
+    if (src.next)
+    {
+      LCIter<std::string> it(&src);
+      LIter<std::string> destIt(&dest);
+      while (it.hasNext())
+      {
+        ++it;
+        destIt.insert(*(it.value()));
+        ++destIt;
+      }
+    }
+  }
+
+  void DictionaryManager::printList(const List<std::string>& list, std::ostream& out)
+  {
+    LCIter<std::string> it(&list);
+    bool first = true;
+    while (it.hasNext())
+    {
+      if (!first)
+      {
+        out << ", ";
+      }
+      out << *(it.value());
+      first = false;
+      ++it;
+    }
   }
 
   void DictionaryManager::load(const std::string& filename, const std::string& dictName)
@@ -88,9 +168,9 @@ namespace vishnevskiy
 
         std::string word = parts[0];
         std::string translationsStr = parts[1];
-        std::string pos = parts[2];
+        std::string part = parts[2];
 
-        if (!isValid(pos))
+        if (!isValid(part))
         {
           delete newDict;
           throw std::runtime_error("Invalid part of speech");
@@ -126,7 +206,7 @@ namespace vishnevskiy
           throw std::runtime_error("Word must have at least one translation");
         }
 
-        std::string key = makeKey(word, pos);
+        std::string key = makeKey(word, part);
         try
         {
           newDict->add(key, transList);
@@ -224,7 +304,7 @@ namespace vishnevskiy
     }
   }
 
-  void DictionaryManager::find(const std::string& dictName, const std::string& pos, const std::string& word)
+  void DictionaryManager::find(const std::string& dictName, const std::string& part, const std::string& word)
   {
     if (!exists(dictName))
     {
@@ -232,7 +312,7 @@ namespace vishnevskiy
     }
     dict_t* dict = dictionaries.at(dictName);
 
-    if (pos == "all")
+    if (part == "all")
     {
       bool found = false;
       List<std::string> allTranslations;
@@ -279,15 +359,15 @@ namespace vishnevskiy
     }
     else
     {
-      if (!isValid(pos))
+      if (!isValid(part))
       {
         throw std::runtime_error("Invalid part of speech");
       }
-      std::string key = makeKey(word, pos);
+      std::string key = makeKey(word, part);
       if (dict->has(key))
       {
         List<std::string> translations = dict->at(key);
-        std::cout << word << " " << pos << " ";
+        std::cout << word << " " << part << " ";
         printList(translations, std::cout);
         std::cout << "\n";
       }
