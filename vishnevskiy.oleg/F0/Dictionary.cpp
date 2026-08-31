@@ -646,10 +646,47 @@ namespace vishnevskiy
       }
       it.next();
     }
-
     if (!found)
     {
       throw std::runtime_error("Translation not found");
     }
   }
+
+  void DictionaryManager::changePart(const std::string& dictName, const std::string& word, const std::string& newPos)
+  {
+    if (!exists(dictName))
+    {
+      throw std::runtime_error("Dictionary does not exist");
+    }
+    if (!isValid(newPos))
+    {
+      throw std::runtime_error("Invalid part of speech");
+    }
+    dict_t* dict = dictionaries.at(dictName);
+    bool found = false;
+    List<std::string> translations;
+    std::string oldKey;
+    vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> it(dict);
+    while (it.hasNext() && !found)
+    {
+      std::string key = it.key();
+      std::pair<std::string, std::string> wordPos = splitKey(key);
+      if (wordPos.first == word)
+      {
+        oldKey = key;
+        copyList(translations, it.val());
+        found = true;
+      }
+      it.next();
+    }
+    
+    if (!found)
+    {
+      throw std::runtime_error("Word not found");
+    }
+    dict->drop(oldKey);
+    std::string newKey = makeKey(word, newPos);
+    dict->add(newKey, translations);
+  }
+
 }
