@@ -272,7 +272,7 @@ namespace vishnevskiy
   template <class T>
   const T* LCIter<T>::value()
   {
-    return *(curr->val);
+    return &(curr->val);
   }
 
   template <class T>

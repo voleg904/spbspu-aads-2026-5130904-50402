@@ -46,7 +46,7 @@ namespace vishnevskiy
       void deleteTranslation(const std::string& dictName, const std::string& word, const std::string& translation);
       void changePart(const std::string& dictName, const std::string& word, const std::string& newPart);
       void findTranslation(const std::string& dictName, const std::string& translation);
-      bool exists(const std::string& dictName) const;
+      bool exists(const std::string& dictName);
   };
 }
 

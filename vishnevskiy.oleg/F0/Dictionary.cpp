@@ -45,7 +45,7 @@ namespace vishnevskiy
     return std::make_pair(key.substr(0, part), key.substr(part + 1));
   }
 
-  bool DictionaryManager::exists(const std::string& dictName) const
+  bool DictionaryManager::exists(const std::string& dictName)
   {
     return dictionaries.has(dictName);
   }
@@ -436,7 +436,7 @@ namespace vishnevskiy
 
   void DictionaryManager::save(const std::string& filename, const std::string& dictName)
   {
-    if (!dictExists(dictName))
+    if (!exists(dictName))
     {
       throw std::runtime_error("Dictionary does not exist");
     }
@@ -585,9 +585,10 @@ namespace vishnevskiy
     {
       throw std::runtime_error("Word not found");
     }
+    std::string* toDelete = nullptr;
     try
     {
-      std::string* toDelete = new std::string[keyCount];
+      toDelete = new std::string[keyCount];
     }
     catch (const std::bad_alloc& e)
     {
@@ -616,7 +617,7 @@ namespace vishnevskiy
 
   void DictionaryManager::deleteTranslation(const std::string& dictName, const std::string& word, const std::string& translation)
   {
-    if (!dictExists(dictName))
+    if (!exists(dictName))
     {
       throw std::runtime_error("Dictionary does not exist");
     }
