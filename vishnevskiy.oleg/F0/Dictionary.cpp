@@ -378,4 +378,46 @@ namespace vishnevskiy
     }
   }
 
+  void DictionaryManager::save(const std::string& filename, const std::string& dictName)
+  {
+    if (!dictExists(dictName))
+    {
+      throw std::runtime_error("Dictionary does not exist");
+    }
+    std::ofstream file(filename);
+    if (!file.is_open())
+    {
+      throw std::runtime_error("Can't create file");
+    }
+    dict_t* dict = dictionaries.at(dictName);
+
+    vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> it(dict);
+    while (it.hasNext())
+    {
+      std::string key = it.key();
+      std::pair<std::string, std::string> wordPart = splitKey(key);
+      List<std::string> translations = it.val();
+
+      file << "(" << wordPart.first << "|";
+
+      LCIter<std::string> itTrans(&translations);
+      bool first = true;
+      while (itTrans.hasNext())
+      {
+        if (!first)
+        {
+          file << ",";
+        }
+        file << *(itTrans.value());
+        first = false;
+        ++itTrans;
+      }
+
+      file << "|" << wordPart.second << ")\n";
+
+      it.next();
+    }
+    file.close();
+  }
+
 }
