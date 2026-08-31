@@ -504,4 +504,58 @@ namespace vishnevskiy
     }
   }
 
+  void DictionaryManager::deleteWord(const std::string& dictName, const std::string& word)
+  {
+    if (!exists(dictName))
+    {
+      throw std::runtime_error("Dictionary does not exist");
+    }
+    dict_t* dict = dictionaries.at(dictName);
+
+    size_t keyCount = 0;
+    vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> itCount(dict);
+    while (itCount.hasNext())
+    {
+      std::string key = itCount.key();
+      std::pair<std::string, std::string> wordPos = splitKey(key);
+      if (wordPos.first == word)
+      {
+        ++keyCount;
+      }
+      itCount.next();
+    }
+
+    if (keyCount == 0)
+    {
+      throw std::runtime_error("Word not found");
+    }
+    try
+    {
+      std::string* toDelete = new std::string[keyCount];
+    }
+    catch (const std::bad_alloc& e)
+    {
+      throw e;
+    }
+    size_t index = 0;
+
+    vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> it(dict);
+    while (it.hasNext())
+    {
+      std::string key = it.key();
+      std::pair<std::string, std::string> wordPos = splitKey(key);
+      if (wordPos.first == word)
+      {
+        toDelete[index++] = key;
+      }
+      it.next();
+    }
+
+    for (size_t i = 0; i < keyCount; ++i)
+    {
+      dict->drop(toDelete[i]);
+    }
+    delete[] toDelete;
+  }
+
 }
