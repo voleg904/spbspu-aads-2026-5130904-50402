@@ -28,6 +28,8 @@ namespace vishnevskiy
       void addToList(List<std::string>& list, const std::string& translation);
       void printList(const List<std::string>& list, std::ostream& out);
       bool isInList(const List<std::string>& list, const std::string& translation) const;
+      void removeTranslation(List<std::string>& list, const std::string& translation);
+      size_t getSize(const List<std::string>& list) const;
 
     public:
       DictionaryManager(size_t capacity, stringHash_t hash, stringEq_t eq);

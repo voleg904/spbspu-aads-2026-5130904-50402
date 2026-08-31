@@ -558,4 +558,42 @@ namespace vishnevskiy
     delete[] toDelete;
   }
 
+  void DictionaryManager::deleteTranslation(const std::string& dictName, const std::string& word, const std::string& translation)
+  {
+    if (!dictExists(dictName))
+    {
+      throw std::runtime_error("Dictionary does not exist");
+    }
+    dict_t* dict = dictionaries.at(dictName);
+    bool found = false;
+    vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> it(dict);
+    while (it.hasNext() && !found)
+    {
+      std::string key = it.key();
+      std::pair<std::string, std::string> wordPos = splitKey(key);
+      if (wordPos.first == word)
+      {
+        List<std::string> translations = it.val();
+        if (isInList(translations, translation))
+        {
+          removeTranslation(translations, translation);
+          if (getSize(translations) == 0)
+          {
+            dict->drop(key);
+          }
+          else
+          {
+            dict->add(key, translations);
+          }
+          found = true;
+        }
+      }
+      it.next();
+    }
+
+    if (!found)
+    {
+      throw std::runtime_error("Translation not found");
+    }
+  }
 }
