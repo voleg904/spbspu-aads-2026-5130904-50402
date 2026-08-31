@@ -96,7 +96,7 @@ namespace vishnevskiy
     {
       LCIter<std::string> it(&src);
       LIter<std::string> destIt(&dest);
-      while (!it.isEnd())
+      while (it.hasNext())
       {
         ++it;
         destIt.insert(*(it.value()));
@@ -373,9 +373,6 @@ namespace vishnevskiy
     if (part == "all")
     {
       bool found = false;
-      List<std::string> allTranslations;
-      bool firstTrans = true;
-
       vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> it(dict);
       while (it.hasNext())
       {
@@ -384,33 +381,15 @@ namespace vishnevskiy
         if (wordPos.first == word)
         {
           found = true;
-          List<std::string> current = it.val();
-          LCIter<std::string> itCurrent(&current);
-          while (!itCurrent.isEnd())
-          {
-            if (firstTrans)
-            {
-              allTranslations.val = *(itCurrent.value());
-              allTranslations.next = nullptr;
-              firstTrans = false;
-            }
-            else
-            {
-              addToList(allTranslations, *(itCurrent.value()));
-            }
-            ++itCurrent;
-          }
+          List<std::string> translations = it.val();
+          std::cout << word << " " << wordPos.second << " ";
+          printList(translations, std::cout);
+          std::cout << "\n";
         }
         it.next();
       }
 
-      if (found)
-      {
-        std::cout << word << " ";
-        printList(allTranslations, std::cout);
-        std::cout << "\n";
-      }
-      else
+      if (!found)
       {
         throw std::runtime_error("Word not found");
       }
