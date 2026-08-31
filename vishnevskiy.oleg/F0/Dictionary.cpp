@@ -119,6 +119,62 @@ namespace vishnevskiy
     }
   }
 
+  void DictionaryManager::removeTranslation(List<std::string>& list, const std::string& translation)
+  {
+    if (list.next == nullptr && list.val == translation)
+    {
+      list.val = std::string();
+      return;
+    }
+
+    LIter<std::string> it(&list);
+    List<std::string>* prev = nullptr;
+
+    while (it.curr)
+    {
+      if (it.value() == translation)
+      {
+        if (prev == nullptr)
+        {
+          List<std::string>* toDelete = it.curr;
+          if (toDelete->next)
+          {
+            list.val = toDelete->next->val;
+            list.next = toDelete->next->next;
+            toDelete->next = nullptr;
+            delete toDelete;
+          }
+          else
+          {
+            list.val = std::string();
+            list.next = nullptr;
+          }
+        }
+        else
+        {
+          prev->next = it.curr->next;
+          it.curr->next = nullptr;
+          delete it.curr;
+        }
+        return;
+      }
+      prev = it.curr;
+      ++it;
+    }
+  }
+
+  size_t DictionaryManager::getSize(const List<std::string>& list) const
+  {
+    size_t count = 0;
+    LCIter<std::string> it(&list);
+    while (it.hasNext())
+    {
+      ++count;
+      ++it;
+    }
+    return count;
+  }
+
   void DictionaryManager::load(const std::string& filename, const std::string& dictName)
   {
     if (exists(dictName))
