@@ -68,6 +68,7 @@ namespace vishnevskiy
       void operator++();
       void set(List<T>* h);
       bool hasNext();
+      bool isEnd();
       void end();
       void insert(const T& d);
       void clear(LIter* head);
@@ -86,6 +87,7 @@ namespace vishnevskiy
       void operator++();
       const T* value();
       bool hasNext();
+      bool isEnd();
   };
 }
 

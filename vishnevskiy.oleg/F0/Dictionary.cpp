@@ -52,7 +52,7 @@ namespace vishnevskiy
 
   bool DictionaryManager::isValid(const std::string& part)
   {
-    static const std::string validParts[] = {"noun", "verb", "adjective", "adverb", "pronoun", "preposition", "conjunction", "interjection"};
+    static const std::string validParts[] = {"all", "noun", "verb", "adjective", "adverb", "pronoun", "preposition", "conjunction", "interjection"};
     static const size_t numParts = 8;
     for (size_t i = 0; i < numParts; ++i)
     {
@@ -67,10 +67,12 @@ namespace vishnevskiy
   bool DictionaryManager::isInList(const List<std::string>& list, const std::string& translation) const
   {
     LCIter<std::string> it(&list);
-    while (it.hasNext())
+    while (!it.isEnd())
     {
       if (*(it.value()) == translation)
+      {
         return true;
+      }
       ++it;
     }
     return false;
@@ -94,7 +96,7 @@ namespace vishnevskiy
     {
       LCIter<std::string> it(&src);
       LIter<std::string> destIt(&dest);
-      while (it.hasNext())
+      while (!it.isEnd())
       {
         ++it;
         destIt.insert(*(it.value()));
@@ -107,7 +109,7 @@ namespace vishnevskiy
   {
     LCIter<std::string> it(&list);
     bool first = true;
-    while (it.hasNext())
+    while (!it.isEnd())
     {
       if (!first)
       {
@@ -167,7 +169,7 @@ namespace vishnevskiy
   {
     size_t count = 0;
     LCIter<std::string> it(&list);
-    while (it.hasNext())
+    while (!it.isEnd())
     {
       ++count;
       ++it;
@@ -334,7 +336,7 @@ namespace vishnevskiy
           List<std::string> existing = resultDict->at(key);
           List<std::string> newList = it2.val();
           LCIter<std::string> itNew(&newList);
-          while (itNew.hasNext())
+          while (!itNew.isEnd())
           {
             addToList(existing, *(itNew.value()));
             ++itNew;
@@ -384,7 +386,7 @@ namespace vishnevskiy
           found = true;
           List<std::string> current = it.val();
           LCIter<std::string> itCurrent(&current);
-          while (itCurrent.hasNext())
+          while (!itCurrent.isEnd())
           {
             if (firstTrans)
             {
@@ -458,7 +460,7 @@ namespace vishnevskiy
 
       LCIter<std::string> itTrans(&translations);
       bool first = true;
-      while (itTrans.hasNext())
+      while (!itTrans.isEnd())
       {
         if (!first)
         {

@@ -107,6 +107,16 @@ namespace vishnevskiy
   }
 
   template <class T>
+  bool LIter<T>::isEnd()
+  {
+    if (curr != nullptr)
+    {
+      return false;
+    }
+    return true;
+  }
+
+  template <class T>
   void LIter<T>::end()
   {
     while (hasNext())
@@ -283,6 +293,16 @@ namespace vishnevskiy
       return curr -> next;
     }
     return false;
+  }
+
+  template <class T>
+  bool LCIter<T>::isEnd()
+  {
+    if (curr != nullptr)
+    {
+      return false;
+    }
+    return true;
   }
 }
 #endif
