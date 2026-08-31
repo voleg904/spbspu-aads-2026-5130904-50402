@@ -420,4 +420,52 @@ namespace vishnevskiy
     file.close();
   }
 
+  void DictionaryManager::addWord(const std::string& dictName, const std::string& word, const std::string& pos, const std::string& translations)
+  {
+    if (!exists(dictName))
+    {
+      throw std::runtime_error("Dictionary does not exist");
+    }
+    if (!isValid(pos))
+    {
+      throw std::runtime_error("Invalid part of speech");
+    }
+    dict_t* dict = dictionaries.at(dictName);
+    std::string key = makeKey(word, pos);
+
+    if (dict->has(key))
+    {
+      throw std::runtime_error("Word already exists");
+    }
+    List<std::string> transList;
+    std::stringstream ss(translations);
+    std::string translation;
+    bool first = true;
+
+    while (std::getline(ss, translation, ','))
+    {
+      if (!translation.empty())
+      {
+        if (first)
+        {
+          transList.val = translation;
+          transList.next = nullptr;
+          first = false;
+        }
+        else
+        {
+          LIter<std::string> it(&transList);
+          it.end();
+          it.insert(translation);
+        }
+      }
+    }
+
+    if (first)
+    {
+      throw std::runtime_error("No translation");
+    }
+    dict->add(key, transList);
+  }
+
 }
