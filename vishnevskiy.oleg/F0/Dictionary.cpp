@@ -468,4 +468,40 @@ namespace vishnevskiy
     dict->add(key, transList);
   }
 
+  void DictionaryManager::addTranslation(const std::string& dictName, const std::string& word, const std::string& translation)
+  {
+    if (!exists(dictName))
+    {
+      throw std::runtime_error("Dictionary does not exist");
+    }
+    dict_t* dict = dictionaries.at(dictName);
+
+    bool found = false;
+    vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> it(dict);
+    while (it.hasNext() && !found)
+    {
+      std::string key = it.key();
+      std::pair<std::string, std::string> wordPos = splitKey(key);
+      if (wordPos.first == word)
+      {
+        List<std::string> translations = it.val();
+        if (!isInList(translations, translation))
+        {
+          addToList(translations, translation);
+          dict->add(key, translations);
+          found = true;
+        }
+        else
+        {
+          throw std::runtime_error("Translation already exists");
+        }
+      }
+      it.next();
+    }
+    if (!found)
+    {
+      throw std::runtime_error("Word not found");
+    }
+  }
+
 }
