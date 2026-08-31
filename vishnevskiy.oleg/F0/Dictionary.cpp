@@ -667,7 +667,6 @@ namespace vishnevskiy
     }
     dict_t* dict = dictionaries.at(dictName);
     bool found = false;
-    List<std::string> translations;
     std::string oldKey;
     vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> it(dict);
     while (it.hasNext() && !found)
@@ -677,20 +676,23 @@ namespace vishnevskiy
       if (wordPos.first == word)
       {
         oldKey = key;
-        copyList(translations, it.val());
         found = true;
       }
-      it.next();
+      if (!found)
+      {
+        it.next();
+      }
     }
-    
+
     if (!found)
     {
       throw std::runtime_error("Word not found");
     }
-    dict->drop(oldKey);
+    List<std::string> translationsToMove = dict->drop(oldKey);
     std::string newKey = makeKey(word, newPos);
-    dict->add(newKey, translations);
+    dict->add(newKey, translationsToMove);
   }
+
 
   void DictionaryManager::findTranslation(const std::string& dictName, const std::string& translation)
   {
