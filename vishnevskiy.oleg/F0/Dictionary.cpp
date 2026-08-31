@@ -689,4 +689,32 @@ namespace vishnevskiy
     dict->add(newKey, translations);
   }
 
+  void DictionaryManager::findTranslation(const std::string& dictName, const std::string& translation)
+  {
+    if (!exists(dictName))
+    {
+      throw std::runtime_error("Dictionary does not exist");
+    }
+    dict_t* dict = dictionaries.at(dictName);
+
+    bool found = false;
+    vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> it(dict);
+    while (it.hasNext())
+    {
+      std::string key = it.key();
+      std::pair<std::string, std::string> wordPos = splitKey(key);
+      List<std::string> translations = it.val();
+      if (isInList(translations, translation))
+      {
+        std::cout << wordPos.first << " " << wordPos.second << "\n";
+        found = true;
+      }
+      it.next();
+    }
+
+    if (!found)
+    {
+      throw std::runtime_error("Translation not found");
+    }
+  }
 }
