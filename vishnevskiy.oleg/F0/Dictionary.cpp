@@ -382,9 +382,11 @@ namespace vishnevskiy
         {
           found = true;
           List<std::string> translations = it.val();
-          std::cout << word << " " << wordPos.second << " ";
+          std::cout << "------------------------------\n";
+          std::cout << "Word: " << word << "\nPart of speech: " << wordPos.second << "\nTranslation(s): ";
           printList(translations, std::cout);
           std::cout << "\n";
+          std::cout << "------------------------------\n";
         }
         it.next();
       }
@@ -690,7 +692,9 @@ namespace vishnevskiy
       List<std::string> translations = it.val();
       if (isInList(translations, translation))
       {
-        std::cout << wordPos.first << " " << wordPos.second << "\n";
+        std::cout << "------------------------------\n";
+        std::cout << "Translation: " << wordPos.first << "\nPart of speech: " << wordPos.second << "\n";
+        std::cout << "------------------------------\n";
         found = true;
       }
       it.next();
