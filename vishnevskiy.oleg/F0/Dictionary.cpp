@@ -701,4 +701,88 @@ namespace vishnevskiy
       throw std::runtime_error("Translation not found");
     }
   }
+
+  void DictionaryManager::translateText(const std::string& filePath, const std::string& dictName, const std::string& resultFilename)
+  {
+    if (!exists(dictName))
+    {
+      throw std::runtime_error("Dictionary does not exist");
+    }
+
+    std::ifstream inputFile(filePath);
+    if (!inputFile.is_open())
+    {
+      throw std::runtime_error("Bad input");
+    }
+
+    std::ofstream outputFile(resultFilename);
+    if (!outputFile.is_open())
+    {
+      throw std::runtime_error("Cannot create result file");
+    }
+
+    dict_t* dict = dictionaries.at(dictName);
+    std::string line;
+
+    while (std::getline(inputFile, line))
+    {
+      std::string resultLine;
+      std::string word;
+      for (size_t i = 0; i <= line.size(); ++i)
+      {
+        char ch;
+        if (i < line.size())
+        {
+          ch = line[i];
+        }
+        else
+        {
+          ch = ' ';
+        }
+
+        if (std::isalpha(ch) || ch == '\'')
+        {
+          word += ch;
+        }
+        else
+        {
+          if (!word.empty())
+          {
+            std::string translated = word;
+            bool found = false;
+
+            vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> it(dict);
+            while (it.hasNext())
+            {
+              std::string key = it.key();
+              std::pair<std::string, std::string> wordPos = splitKey(key);
+              if (wordPos.first == word)
+              {
+                List<std::string> translations = it.val();
+                LCIter<std::string> itTrans(&translations);
+                if (!itTrans.isEnd())
+                {
+                  translated = *(itTrans.value());
+                  found = true;
+                  break;
+                }
+              }
+              it.next();
+            }
+
+            resultLine += translated;
+            word.clear();
+          }
+          if (i < line.size())
+          {
+            resultLine += ch;
+          }
+        }
+      }
+      outputFile << resultLine << "\n";
+    }
+
+    inputFile.close();
+    outputFile.close();
+  }
 }
