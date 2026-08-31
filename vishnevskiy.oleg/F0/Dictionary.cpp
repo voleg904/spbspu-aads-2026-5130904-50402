@@ -90,7 +90,7 @@ namespace vishnevskiy
         std::string translationsStr = parts[1];
         std::string pos = parts[2];
 
-        if (!isValidPos(pos))
+        if (!isValid(pos))
         {
           delete newDict;
           throw std::runtime_error("Invalid part of speech");
@@ -164,11 +164,11 @@ namespace vishnevskiy
 
   void DictionaryManager::merge(const std::string& dict1, const std::string& dict2, const std::string& result)
   {
-    if (!dictExists(dict1) || !dictExists(dict2))
+    if (!exists(dict1) || !exists(dict2))
     {
       throw std::runtime_error("Dictionaries do not exist");
     }
-    if (dictExists(result))
+    if (exists(result))
     {
       throw std::runtime_error("Dictionary already exists");
     }
@@ -192,15 +192,15 @@ namespace vishnevskiy
       while (it2.hasNext())
       {
         std::string key = it2.key();
+
         if (resultDict->has(key))
         {
           List<std::string> existing = resultDict->at(key);
           List<std::string> newList = it2.val();
-          
-          LIter<std::string> itNew(const_cast<List<std::string>*>(&newList));
-          while (itNew.curr)
+          LCIter<std::string> itNew(&newList);
+          while (itNew.hasNext())
           {
-            addTranslationToList(existing, itNew.value());
+            addToList(existing, *(itNew.value()));
             ++itNew;
           }
 
@@ -221,6 +221,80 @@ namespace vishnevskiy
     {
       delete resultDict;
       throw;
+    }
+  }
+
+  void DictionaryManager::find(const std::string& dictName, const std::string& pos, const std::string& word)
+  {
+    if (!exists(dictName))
+    {
+      throw std::runtime_error("Dictionary does not exist");
+    }
+    dict_t* dict = dictionaries.at(dictName);
+
+    if (pos == "all")
+    {
+      bool found = false;
+      List<std::string> allTranslations;
+      bool firstTrans = true;
+
+      vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> it(dict);
+      while (it.hasNext())
+      {
+        std::string key = it.key();
+        std::pair<std::string, std::string> wordPos = splitKey(key);
+        if (wordPos.first == word)
+        {
+          found = true;
+          List<std::string> current = it.val();
+          LCIter<std::string> itCurrent(&current);
+          while (itCurrent.hasNext())
+          {
+            if (firstTrans)
+            {
+              allTranslations.val = *(itCurrent.value());
+              allTranslations.next = nullptr;
+              firstTrans = false;
+            }
+            else
+            {
+              addToList(allTranslations, *(itCurrent.value()));
+            }
+            ++itCurrent;
+          }
+        }
+        it.next();
+      }
+
+      if (found)
+      {
+        std::cout << word << " ";
+        printList(allTranslations, std::cout);
+        std::cout << "\n";
+      }
+      else
+      {
+        throw std::runtime_error("Word not found");
+      }
+    }
+    else
+    {
+      if (!isValid(pos))
+      {
+        throw std::runtime_error("Invalid part of speech");
+      }
+      std::string key = makeKey(word, pos);
+      if (dict->has(key))
+      {
+        List<std::string> translations = dict->at(key);
+        std::cout << word << " " << pos << " ";
+        printList(translations, std::cout);
+        std::cout << "\n";
+      }
+      else
+      {
+        throw std::runtime_error("Word not found");
+      }
     }
   }
 

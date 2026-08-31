@@ -21,6 +21,10 @@ namespace vishnevskiy
       HashTable<std::string, dict_t*, stringHash_t, stringEq_t> dictionaries;
       stringHash_t hashFunc;
       stringEq_t eqFunc;
+      bool isValid(const std::string& pos);
+      void copyList(List<std::string>& dest, const List<std::string>& src);
+      void addToList(List<std::string>& list, const std::string& translation);
+      void printList(const List<std::string>& list, std::ostream& out);
 
     public:
       DictionaryManager(size_t capacity, stringHash_t hash, stringEq_t eq);
