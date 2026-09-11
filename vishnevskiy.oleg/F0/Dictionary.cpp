@@ -52,7 +52,17 @@ namespace vishnevskiy
 
   bool DictionaryManager::isValid(const std::string& part)
   {
-    static const std::string validParts[] = {"all", "noun", "verb", "adjective", "adverb", "pronoun", "preposition", "conjunction", "interjection"};
+    static const std::string validParts[] = {
+      "all", 
+      "noun", 
+      "verb", 
+      "adjective",
+      "adverb",
+      "pronoun",
+      "preposition",
+      "conjunction",
+      "interjection"
+    };
     static const size_t numParts = 8;
     for (size_t i = 0; i < numParts; ++i)
     {
