@@ -4,9 +4,9 @@
 
 namespace vishnevskiy
 {
-  using stringHash_t = size_t(*)(const std::string&);
+  using strHash_t = size_t(*)(const std::string&);
   using stringEq_t = bool(*)(const std::string&, const std::string&);
-  using dict_t = HashTable<std::string, List<std::string>, stringHash_t, stringEq_t>;
+  using dict_t = HashTable<std::string, List<std::string>, strHash_t, stringEq_t>;
 
   size_t stringHasher(const std::string& s)
   {
@@ -20,13 +20,13 @@ namespace vishnevskiy
     return a == b;
   }
 
-  DictionaryManager::DictionaryManager(size_t capacity, stringHash_t hash, stringEq_t eq):
+  DictionaryManager::DictionaryManager(size_t capacity, strHash_t hash, stringEq_t eq):
     dictionaries(capacity, hash, eq), hashFunc(hash), eqFunc(eq)
   {}
 
   DictionaryManager::~DictionaryManager()
   {
-    vishnevskiy::tableIt<std::string, dict_t*, stringHash_t, stringEq_t> it(&dictionaries);
+    vishnevskiy::tableIt<std::string, dict_t*, strHash_t, stringEq_t> it(&dictionaries);
     while (it.hasNext())
     {
       delete it.val();
@@ -53,9 +53,9 @@ namespace vishnevskiy
   bool DictionaryManager::isValid(const std::string& part)
   {
     static const std::string validParts[] = {
-      "all", 
-      "noun", 
-      "verb", 
+      "all",
+      "noun",
+      "verb",
       "adjective",
       "adverb",
       "pronoun",
@@ -74,7 +74,8 @@ namespace vishnevskiy
     return false;
   }
 
-  bool DictionaryManager::isInList(const List<std::string>& list, const std::string& translation) const
+  bool DictionaryManager::isInList(const List<std::string>& list,
+                                   const std::string& translation) const
   {
     LCIter<std::string> it(&list);
     while (!it.isEnd())
@@ -131,7 +132,8 @@ namespace vishnevskiy
     }
   }
 
-  void DictionaryManager::removeTranslation(List<std::string>& list, const std::string& translation)
+  void DictionaryManager::removeTranslation(List<std::string>& list,
+                                            const std::string& translation)
   {
     if (list.next == nullptr && list.val == translation)
     {
@@ -310,7 +312,9 @@ namespace vishnevskiy
     dictionaries.drop(dictName);
   }
 
-  void DictionaryManager::merge(const std::string& dict1, const std::string& dict2, const std::string& result)
+  void DictionaryManager::merge(const std::string& dict1,
+                                const std::string& dict2,
+                                const std::string& result)
   {
     if (!exists(dict1) || !exists(dict2))
     {
@@ -322,11 +326,15 @@ namespace vishnevskiy
     }
     dict_t* dict1Ptr = dictionaries.at(dict1);
     dict_t* dict2Ptr = dictionaries.at(dict2);
-    dict_t* resultDict = new dict_t(dict1Ptr->getCapacity() + dict2Ptr->getCapacity(), hashFunc, eqFunc);
+    dict_t* resultDict = new dict_t(
+      dict1Ptr->getCapacity() + dict2Ptr->getCapacity(),
+      hashFunc,
+      eqFunc
+    );
 
     try
     {
-      vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> it1(dict1Ptr);
+      vishnevskiy::tableIt<std::string, List<std::string>, strHash_t, stringEq_t> it1(dict1Ptr);
       while (it1.hasNext())
       {
         std::string key = it1.key();
@@ -336,7 +344,7 @@ namespace vishnevskiy
         it1.next();
       }
 
-      vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> it2(dict2Ptr);
+      vishnevskiy::tableIt<std::string, List<std::string>, strHash_t, stringEq_t> it2(dict2Ptr);
       while (it2.hasNext())
       {
         std::string key = it2.key();
@@ -372,7 +380,9 @@ namespace vishnevskiy
     }
   }
 
-  void DictionaryManager::find(const std::string& dictName, const std::string& part, const std::string& word)
+  void DictionaryManager::find(const std::string& dictName,
+                               const std::string& part,
+                               const std::string& word)
   {
     if (!exists(dictName))
     {
@@ -383,7 +393,7 @@ namespace vishnevskiy
     if (part == "all")
     {
       bool found = false;
-      vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> it(dict);
+      vishnevskiy::tableIt<std::string, List<std::string>, strHash_t, stringEq_t> it(dict);
       while (it.hasNext())
       {
         std::string key = it.key();
@@ -393,7 +403,8 @@ namespace vishnevskiy
           found = true;
           List<std::string> translations = it.val();
           std::cout << "------------------------------\n";
-          std::cout << "Word: " << word << "\nPart of speech: " << wordPos.second << "\nTranslation(s): ";
+          std::cout << "Word: " << word << "\n";
+          std::cout << "Part of speech: " << wordPos.second << "\nTranslation(s): ";
           printList(translations, std::cout);
           std::cout << "\n";
           std::cout << "------------------------------\n";
@@ -440,7 +451,7 @@ namespace vishnevskiy
     }
     dict_t* dict = dictionaries.at(dictName);
 
-    vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> it(dict);
+    vishnevskiy::tableIt<std::string, List<std::string>, strHash_t, stringEq_t> it(dict);
     while (it.hasNext())
     {
       std::string key = it.key();
@@ -469,7 +480,10 @@ namespace vishnevskiy
     file.close();
   }
 
-  void DictionaryManager::addWord(const std::string& dictName, const std::string& word, const std::string& pos, const std::string& translations)
+  void DictionaryManager::addWord(const std::string& dictName,
+                                  const std::string& word,
+                                  const std::string& pos,
+                                  const std::string& translations)
   {
     if (!exists(dictName))
     {
@@ -517,7 +531,9 @@ namespace vishnevskiy
     dict->add(key, transList);
   }
 
-  void DictionaryManager::addTranslation(const std::string& dictName, const std::string& word, const std::string& translation)
+  void DictionaryManager::addTranslation(const std::string& dictName,
+                                         const std::string& word,
+                                         const std::string& translation)
   {
     if (!exists(dictName))
     {
@@ -526,7 +542,7 @@ namespace vishnevskiy
     dict_t* dict = dictionaries.at(dictName);
 
     bool found = false;
-    vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> it(dict);
+    vishnevskiy::tableIt<std::string, List<std::string>, strHash_t, stringEq_t> it(dict);
     while (it.hasNext() && !found)
     {
       std::string key = it.key();
@@ -562,7 +578,7 @@ namespace vishnevskiy
     dict_t* dict = dictionaries.at(dictName);
 
     size_t keyCount = 0;
-    vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> itCount(dict);
+    vishnevskiy::tableIt<std::string, List<std::string>, strHash_t, stringEq_t> itCount(dict);
     while (itCount.hasNext())
     {
       std::string key = itCount.key();
@@ -589,7 +605,7 @@ namespace vishnevskiy
     }
     size_t index = 0;
 
-    vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> it(dict);
+    vishnevskiy::tableIt<std::string, List<std::string>, strHash_t, stringEq_t> it(dict);
     while (it.hasNext())
     {
       std::string key = it.key();
@@ -608,7 +624,9 @@ namespace vishnevskiy
     delete[] toDelete;
   }
 
-  void DictionaryManager::deleteTranslation(const std::string& dictName, const std::string& word, const std::string& translation)
+  void DictionaryManager::deleteTranslation(const std::string& dictName,
+                                            const std::string& word,
+                                            const std::string& translation)
   {
     if (!exists(dictName))
     {
@@ -616,7 +634,7 @@ namespace vishnevskiy
     }
     dict_t* dict = dictionaries.at(dictName);
     bool found = false;
-    vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> it(dict);
+    vishnevskiy::tableIt<std::string, List<std::string>, strHash_t, stringEq_t> it(dict);
     while (it.hasNext() && !found)
     {
       std::string key = it.key();
@@ -646,7 +664,9 @@ namespace vishnevskiy
     }
   }
 
-  void DictionaryManager::changePart(const std::string& dictName, const std::string& word, const std::string& newPos)
+  void DictionaryManager::changePart(const std::string& dictName,
+                                     const std::string& word,
+                                     const std::string& newPos)
   {
     if (!exists(dictName))
     {
@@ -659,7 +679,7 @@ namespace vishnevskiy
     dict_t* dict = dictionaries.at(dictName);
     bool found = false;
     std::string oldKey;
-    vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> it(dict);
+    vishnevskiy::tableIt<std::string, List<std::string>, strHash_t, stringEq_t> it(dict);
     while (it.hasNext() && !found)
     {
       std::string key = it.key();
@@ -685,7 +705,8 @@ namespace vishnevskiy
   }
 
 
-  void DictionaryManager::findTranslation(const std::string& dictName, const std::string& translation)
+  void DictionaryManager::findTranslation(const std::string& dictName,
+                                          const std::string& translation)
   {
     if (!exists(dictName))
     {
@@ -694,7 +715,7 @@ namespace vishnevskiy
     dict_t* dict = dictionaries.at(dictName);
 
     bool found = false;
-    vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> it(dict);
+    vishnevskiy::tableIt<std::string, List<std::string>, strHash_t, stringEq_t> it(dict);
     while (it.hasNext())
     {
       std::string key = it.key();
@@ -703,7 +724,8 @@ namespace vishnevskiy
       if (isInList(translations, translation))
       {
         std::cout << "------------------------------\n";
-        std::cout << "Translation: " << wordPos.first << "\nPart of speech: " << wordPos.second << "\n";
+        std::cout << "Translation: " << wordPos.first << "\n";
+        std::cout << "Part of speech: " << wordPos.second << "\n";
         std::cout << "------------------------------\n";
         found = true;
       }
@@ -716,7 +738,9 @@ namespace vishnevskiy
     }
   }
 
-  void DictionaryManager::translateText(const std::string& filePath, const std::string& dictName, const std::string& resultFilename)
+  void DictionaryManager::translateText(const std::string& filePath,
+                                        const std::string& dictName,
+                                        const std::string& resultFilename)
   {
     if (!exists(dictName))
     {
@@ -765,7 +789,7 @@ namespace vishnevskiy
             std::string translated = word;
             bool found = false;
 
-            vishnevskiy::tableIt<std::string, List<std::string>, stringHash_t, stringEq_t> it(dict);
+            vishnevskiy::tableIt<std::string, List<std::string>, strHash_t, stringEq_t> it(dict);
             while (it.hasNext())
             {
               std::string key = it.key();

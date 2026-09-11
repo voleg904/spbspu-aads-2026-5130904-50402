@@ -10,16 +10,16 @@
 
 namespace vishnevskiy
 {
-  using stringHash_t = size_t(*)(const std::string&);
+  using strHash_t = size_t(*)(const std::string&);
   using stringEq_t = bool(*)(const std::string&, const std::string&);
 
-  using dict_t = HashTable<std::string, List<std::string>, stringHash_t, stringEq_t>;
+  using dict_t = HashTable<std::string, List<std::string>, strHash_t, stringEq_t>;
 
   class DictionaryManager
   {
     private:
-      HashTable<std::string, dict_t*, stringHash_t, stringEq_t> dictionaries;
-      stringHash_t hashFunc;
+      HashTable<std::string, dict_t*, strHash_t, stringEq_t> dictionaries;
+      strHash_t hashFunc;
       stringEq_t eqFunc;
       std::string makeKey(const std::string& word, const std::string& part);
       std::pair<std::string, std::string> splitKey(const std::string& key);
@@ -32,7 +32,7 @@ namespace vishnevskiy
       size_t getSize(const List<std::string>& list) const;
 
     public:
-      DictionaryManager(size_t capacity, stringHash_t hash, stringEq_t eq);
+      DictionaryManager(size_t capacity, strHash_t hash, stringEq_t eq);
       ~DictionaryManager();
 
       void load(const std::string& filename, const std::string& dictName);

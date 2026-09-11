@@ -5,7 +5,7 @@
 #include "Dictionary.hpp"
 #include <limits>
 
-using stringHash_t = size_t(*)(const std::string&);
+using strHash_t = size_t(*)(const std::string&);
 using stringEq_t = bool(*)(const std::string&, const std::string&);
 
 size_t stringHasher(const std::string& s)
@@ -124,7 +124,7 @@ int main(int argc, char* argv[])
   vishnevskiy::DictionaryManager manager(12, stringHasher, stringEq);
 
   using cmd_t = void(*)(std::ostream&, std::istream&, vishnevskiy::DictionaryManager&);
-  vishnevskiy::HashTable<std::string, cmd_t, stringHash_t, stringEq_t> cmds(12, stringHasher, stringEq);
+  vishnevskiy::HashTable<std::string, cmd_t, strHash_t, stringEq_t> cmds(12, stringHasher, stringEq);
 
   cmds.add("load", loadCmd);
   cmds.add("delete", deleteCmd);
