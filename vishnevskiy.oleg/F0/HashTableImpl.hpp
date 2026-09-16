@@ -212,41 +212,18 @@ namespace vishnevskiy
 
   template <class Key, class Value, class Hash, class Equal>
   HashTable<Key, Value, Hash, Equal>::HashTable(const HashTable& other):
-    keys(new Key[other.cap]),
-    values(new Value[other.cap]),
-    flags(new size_t[other.cap]),
+    keys(nullptr),
+    values(nullptr),
+    flags(nullptr),
     hash(other.hash),
     eq(other.eq),
     size(other.size),
     cap(other.cap)
   {
-    for (size_t i = 0; i < cap; ++i)
-    {
-      flags[i] = other.flags[i];
-      if (flags[i] == 1)
-      {
-        keys[i] = other.keys[i];
-        values[i] = other.values[i];
-      }
-    }
-  }
+    createEls(cap);
 
-  template <class Key, class Value, class Hash, class Equal>
-  HashTable<Key, Value, Hash, Equal>&
-  HashTable<Key, Value, Hash, Equal>::operator=(const HashTable& other)
-  {
-    if (this != &other)
+    try
     {
-      delete[] keys;
-      delete[] values;
-      delete[] flags;
-      cap = other.cap;
-      size = other.size;
-      hash = other.hash;
-      eq = other.eq;
-      keys = new Key[cap];
-      values = new Value[cap];
-      flags = new size_t[cap];
       for (size_t i = 0; i < cap; ++i)
       {
         flags[i] = other.flags[i];
@@ -256,6 +233,62 @@ namespace vishnevskiy
           values[i] = other.values[i];
         }
       }
+    }
+    catch (...)
+    {
+      delete[] keys;
+      delete[] values;
+      delete[] flags;
+      throw;
+    }
+  }
+
+  template <class Key, class Value, class Hash, class Equal>
+  HashTable<Key, Value, Hash, Equal>&
+  HashTable<Key, Value, Hash, Equal>::operator=(const HashTable& other)
+  {
+    if (this != &other)
+    {
+      Key* newKeys = nullptr;
+      Value* newValues = nullptr;
+      size_t* newFlags = nullptr;
+      try
+      {
+        newKeys = new Key[other.cap];
+        newValues = new Value[other.cap];
+        newFlags = new size_t[other.cap];
+        for (size_t i = 0; i < other.cap; ++i)
+        {
+          newFlags[i] = 0;
+        }
+        for (size_t i = 0; i < other.cap; ++i)
+        {
+          newFlags[i] = other.flags[i];
+          if (newFlags[i] == 1)
+          {
+            newKeys[i] = other.keys[i];
+            newValues[i] = other.values[i];
+          }
+        }
+      }
+      catch (...)
+      {
+        delete[] newKeys;
+        delete[] newValues;
+        delete[] newFlags;
+        throw;
+      }
+
+      delete[] keys;
+      delete[] values;
+      delete[] flags;
+      keys = newKeys;
+      values = newValues;
+      flags = newFlags;
+      cap = other.cap;
+      size = other.size;
+      hash = other.hash;
+      eq = other.eq;
     }
     return *this;
   }
