@@ -2,6 +2,7 @@
 #define HASHTABLE_HPP
 
 #include <boost/hash2/siphash.hpp>
+#include <utility>
 
 namespace vishnevskiy
 {
@@ -14,8 +15,7 @@ namespace vishnevskiy
     private:
       Key* keys;
       Value* values;
-      bool* tombstone;
-      size_t* psl;
+      size_t* flags;
       Hash hash;
       Equal eq;
       size_t size;
@@ -24,22 +24,25 @@ namespace vishnevskiy
       size_t getIndex(const Key& key);
       size_t probe(size_t ind);
       size_t findByKey(const Key& key);
-      size_t findFree(const Key& key, size_t& resPsl);
+      size_t findFree(const Key& key);
       void createEls(size_t capacity);
 
     public:
       HashTable(size_t capacity, Hash hash_f, Equal eq_f);
       HashTable(const HashTable& other);
-      HashTable& operator=(const HashTable& other);
+      HashTable& operator=(HashTable other);
       ~HashTable();
       void add(const Key& k, const Value& v);
-      Value drop(Key k);
+      bool drop(Key k, Value& res);
       Value& at(const Key& k);
       const Value& at(const Key& k) const;
       bool has(Key k);
       void rehash(size_t slots);
       size_t getSize() const;
       size_t getCapacity() const;
+
+      tableIt<Key, Value, Hash, Equal> begin() const;
+      tableIt<Key, Value, Hash, Equal> end() const;
 
       friend class tableIt<Key, Value, Hash, Equal>;
   };
@@ -50,14 +53,18 @@ namespace vishnevskiy
     private:
       const HashTable<Key, Value, Hash, Equal>* table;
       size_t curr;
+      tableIt(const HashTable<Key, Value, Hash, Equal>* table, size_t index);
 
     public:
       tableIt();
-      tableIt(const HashTable<Key, Value, Hash, Equal>* table);
-      void next();
-      bool hasNext();
-      Value& val();
-      Key& key();
+      tableIt(const HashTable<Key, Value, Hash, Equal>* InitTable);
+      tableIt& operator++();
+      tableIt operator++(int);
+      bool operator==(const tableIt& other) const;
+      bool operator!=(const tableIt& other) const;
+      std::pair<const Key&, Value&> operator*() const;
+
+      friend class HashTable<Key, Value, Hash, Equal>;
   };
 }
 

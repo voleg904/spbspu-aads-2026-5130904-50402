@@ -147,19 +147,7 @@ int main(int argc, char* argv[])
     {
       cmds.at(cmd)(std::cout, std::cin, manager);
     }
-    catch (const std::runtime_error& e)
-    {
-      std::cout << "<INVALID COMMAND>\n";
-      auto toignore = std::numeric_limits<std::streamsize>::max();
-      std::cin.ignore(toignore, '\n');
-    }
-    catch (const std::out_of_range&)
-    {
-      std::cout << "<INVALID COMMAND>\n";
-      auto toignore = std::numeric_limits<std::streamsize>::max();
-      std::cin.ignore(toignore, '\n');
-    }
-    catch (const std::logic_error& e)
+    catch (...)
     {
       std::cout << "<INVALID COMMAND>\n";
       auto toignore = std::numeric_limits<std::streamsize>::max();

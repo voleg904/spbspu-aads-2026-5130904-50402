@@ -5,6 +5,7 @@
 #include "HashTable.hpp"
 #include <cstddef>
 #include <stdexcept>
+#include <utility>
 
 namespace vishnevskiy
 {
@@ -24,73 +25,52 @@ namespace vishnevskiy
   size_t HashTable<Key, Value, Hash, Equal>::findByKey(const Key& key)
   {
     size_t ind = getIndex(key);
-    size_t currPsl = 0;
     for (size_t i = 0; i < cap; ++i)
     {
-      if (tombstone[ind] && psl[ind] == 0)
+      if (flags[ind] == 0)
       {
-        return cap+1;
+        return cap;
       }
-      if (!tombstone[ind] && eq(keys[ind], key))
+      if (flags[ind] == 1 && eq(keys[ind], key))
       {
         return ind;
       }
-      if (psl[ind] < currPsl)
-      {
-        return cap+1;
-      }
       ind = probe(ind);
-      ++currPsl;
     }
-    return cap+1;
+    return cap;
   }
 
   template <class Key, class Value, class Hash, class Equal>
-  size_t HashTable<Key, Value, Hash, Equal>::findFree(const Key& key, size_t& resPsl)
+  size_t HashTable<Key, Value, Hash, Equal>::findFree(const Key& key)
   {
     size_t ind = getIndex(key);
-    size_t currPsl = 0;
     size_t firstTombstone = cap;
     bool hasTombstone = false;
 
     for (size_t i = 0; i < cap; ++i)
     {
-      if (tombstone[ind] && psl[ind] == 0)
+      size_t f = flags[ind];
+      if (f == 0)
       {
         if (hasTombstone)
         {
-          resPsl = psl[firstTombstone];
           return firstTombstone;
         }
-        resPsl = currPsl;
         return ind;
       }
-      if (tombstone[ind] && !hasTombstone)
+      else if (f == 2 && !hasTombstone)
       {
         firstTombstone = ind;
         hasTombstone = true;
       }
-      if (!tombstone[ind] && eq(keys[ind], key))
+      else if (f == 1 && eq(keys[ind], key))
       {
-        resPsl = psl[ind];
-        return ind;
-      }
-      if (!tombstone[ind] && psl[ind] < currPsl)
-      {
-        if (hasTombstone)
-        {
-          resPsl = psl[firstTombstone];
-          return firstTombstone;
-        }
-        resPsl = currPsl;
         return ind;
       }
       ind = probe(ind);
-      ++currPsl;
     }
     if (hasTombstone)
     {
-      resPsl = psl[firstTombstone];
       return firstTombstone;
     }
     return cap+1;
@@ -99,63 +79,36 @@ namespace vishnevskiy
   template <class Key, class Value, class Hash, class Equal>
   void HashTable<Key, Value, Hash, Equal>::add(const Key& k, const Value& v)
   {
-    size_t currPsl = 0;
-    size_t curr = findFree(k, currPsl);
+    size_t curr = findFree(k);
 
     if (curr > cap)
     {
       throw std::runtime_error("Table is full");
     }
-    if (!tombstone[curr] == 1 && eq(keys[curr], k))
+    if (flags[curr] == 1 && eq(keys[curr], k))
     {
       values[curr] = v;
-      return;
     }
-    Key currKey = k;
-    Value currVal = v;
-
-    for (size_t i = 0; i < cap; ++i)
+    else
     {
-      if (tombstone[curr] || psl[curr] < currPsl)
-      {
-        if (tombstone[curr])
-        {
-          keys[curr] = currKey;
-          values[curr] = currVal;
-          tombstone[curr] = false;
-          psl[curr] = currPsl;
-          ++size;
-          return;
-        }
-
-        Key tmpKey = currKey;
-        currKey = keys[curr];
-        keys[curr] = tmpKey;
-
-        Value tmpVal = currVal;
-        currVal = values[curr];
-        values[curr] = tmpVal;
-
-        size_t tmpPsl = currPsl;
-        currPsl = psl[curr];
-        psl[curr] = tmpPsl;
-      }
-      curr = probe(curr);
-      ++currPsl;
+      keys[curr] = k;
+      values[curr] = v;
+      flags[curr] = 1;
+      size++;
     }
   }
 
   template <class Key, class Value, class Hash, class Equal>
-  Value HashTable<Key, Value, Hash, Equal>::drop(Key k)
+  bool HashTable<Key, Value, Hash, Equal>::drop(Key k, Value& res)
   {
     size_t curr = findByKey(k);
 
-    if (curr <= cap && !tombstone[curr])
+    if (curr < cap && flags[curr] == 1)
     {
-      Value result = values[curr];
-      tombstone[curr] = true;
+      res = values[curr];
+      flags[curr] = 2;
       size--;
-      return result;
+      return true;
     }
     throw std::runtime_error("Key does not exist");
   }
@@ -163,7 +116,7 @@ namespace vishnevskiy
   template <class Key, class Value, class Hash, class Equal>
   bool HashTable<Key, Value, Hash, Equal>::has(Key k)
   {
-    return findByKey(k) <= cap;
+    return findByKey(k) < cap;
   }
 
   template <class Key, class Value, class Hash, class Equal>
@@ -174,43 +127,65 @@ namespace vishnevskiy
       throw std::runtime_error("Not enough slots");
     }
 
-    Key* keysCopy = keys;
-    Value* valuesCopy = values;
-    bool* tombCopy = tombstone;
-    size_t* pslCopy = psl;
-    size_t capCopy = cap;
+    Key* newKeys = nullptr;
+    Value* newValues = nullptr;
+    size_t* newFlags = nullptr;
+    try
+    {
+      newKeys = new Key[slots];
+      newValues = new Value[slots];
+      newFlags = new size_t[slots];
+    }
+    catch (const std::bad_alloc& )
+    {
+      delete[] newKeys;
+      delete[] newValues;
+      delete[] newFlags;
+      throw;
+    }
 
-    keys = nullptr;
-    values = nullptr;
-    tombstone = nullptr;
-    psl = nullptr;
-    size = 0;
+    for (size_t i = 0; i < slots; ++i)
+    {
+      newFlags[i] = 0;
+    }
+    Key* oldKeys = keys;
+    Value* oldValues = values;
+    size_t* oldFlags = flags;
+    size_t oldCap = cap;
+    size_t oldSize = size;
+
+    keys = newKeys;
+    values = newValues;
+    flags = newFlags;
     cap = slots;
-    createEls(cap);
+    size = 0;
 
     try
     {
-      for (size_t i = 0; i < capCopy; ++i)
+      for (size_t i = 0; i < oldCap; ++i)
       {
-        if (!tombCopy[i])
+        if (oldFlags[i] == 1)
         {
-          add(keysCopy[i], valuesCopy[i]);
+          add(oldKeys[i], oldValues[i]);
         }
       }
     }
     catch (...)
     {
-      delete[] keysCopy;
-      delete[] valuesCopy;
-      delete[] tombCopy;
-      delete[] pslCopy;
+      delete[] keys;
+      delete[] values;
+      delete[] flags;
+      keys = oldKeys;
+      values = oldValues;
+      flags = oldFlags;
+      cap = oldCap;
+      size = oldSize;
       throw;
     }
 
-    delete[] keysCopy;
-    delete[] valuesCopy;
-    delete[] tombCopy;
-    delete[] pslCopy;
+    delete[] oldKeys;
+    delete[] oldValues;
+    delete[] oldFlags;
   }
 
   template <class Key, class Value, class Hash, class Equal>
@@ -218,42 +193,36 @@ namespace vishnevskiy
   {
     Key* keyPtr = nullptr;
     Value* valPtr = nullptr;
-    bool* tombPtr = nullptr;
-    size_t* pslPtr = nullptr;
+    size_t* flagPtr = nullptr;
 
     try
     {
       keyPtr = new Key[capacity];
       valPtr = new Value[capacity];
-      tombPtr = new bool[capacity];
-      pslPtr = new size_t[capacity];
+      flagPtr = new size_t[capacity];
     }
     catch (const std::bad_alloc& e)
     {
       delete[] keyPtr;
       delete[] valPtr;
-      delete[] tombPtr;
-      delete[] pslPtr;
-      throw e;
+      delete[] flagPtr;
+      throw;
     }
 
     for (size_t i = 0; i < capacity; ++i)
     {
-      tombPtr[i] = true;
-      pslPtr[i] = 0;
+      flagPtr[i] = 0;
     }
     keys = keyPtr;
     values = valPtr;
-    tombstone = tombPtr;
-    psl = pslPtr;
+    flags = flagPtr;
   }
 
   template <class Key, class Value, class Hash, class Equal>
   HashTable<Key, Value, Hash, Equal>::HashTable(size_t capacity, Hash hash_f, Equal eq_f):
     keys(nullptr),
     values(nullptr),
-    tombstone(nullptr),
-    psl(nullptr),
+    flags(nullptr),
     hash(hash_f),
     eq(eq_f),
     size(0),
@@ -267,8 +236,7 @@ namespace vishnevskiy
   {
     delete[] keys;
     delete[] values;
-    delete[] tombstone;
-    delete[] psl;
+    delete[] flags;
   }
 
   template <class Key, class Value, class Hash, class Equal>
@@ -276,8 +244,6 @@ namespace vishnevskiy
     keys(nullptr),
     values(nullptr),
     flags(nullptr),
-    tombstone(nullptr),
-    psl(nullptr),
     hash(other.hash),
     eq(other.eq),
     size(other.size),
@@ -289,74 +255,13 @@ namespace vishnevskiy
     {
       for (size_t i = 0; i < cap; ++i)
       {
-        tombstone[i] = other.tombstone[i];
-        psl[i] = other.psl[i];
-        if (!tombstone[i])
+        flags[i] = other.flags[i];
+        if (flags[i] == 1)
         {
           keys[i] = other.keys[i];
           values[i] = other.values[i];
         }
       }
-    }
-    catch (...)
-    {
-      delete[] keys;
-      delete[] values;
-      delete[] tombstone;
-      delete[] psl;
-      throw;
-    }
-  }
-
-    try
-    {
-      Key* newKeys = nullptr;
-      Value* newValues = nullptr;
-      bool* newTomb = nullptr;
-      size_t* newPsl = nullptr;
-      try
-      {
-        newKeys = new Key[other.cap];
-        newValues = new Value[other.cap];
-        newTomb = new bool[other.cap];
-        newPsl = new size_t[other.cap];
-        for (size_t i = 0; i < other.cap; ++i)
-        {
-          newTomb[i] = true;
-          newPsl[i] = 0;
-        }
-        for (size_t i = 0; i < other.cap; ++i)
-        {
-          newTomb[i] = other.tombstone[i];
-          newPsl[i] = other.psl[i];
-          if (!newTomb[i])
-          {
-            newKeys[i] = other.keys[i];
-            newValues[i] = other.values[i];
-          }
-        }
-      }
-      catch (...)
-      {
-        delete[] newKeys;
-        delete[] newValues;
-        delete[] newTomb;
-        delete[] newPsl;
-        throw;
-      }
-
-      delete[] keys;
-      delete[] values;
-      delete[] tombstone;
-      delete[] psl;
-      keys = newKeys;
-      values = newValues;
-      tombstone = newTomb;
-      psl = newPsl;
-      cap = other.cap;
-      size = other.size;
-      hash = other.hash;
-      eq = other.eq;
     }
     catch (...)
     {
@@ -369,51 +274,36 @@ namespace vishnevskiy
 
   template <class Key, class Value, class Hash, class Equal>
   HashTable<Key, Value, Hash, Equal>&
-  HashTable<Key, Value, Hash, Equal>::operator=(const HashTable& other)
+  HashTable<Key, Value, Hash, Equal>::operator=(HashTable other)
   {
-    if (this != &other)
-    {
-      Key* newKeys = nullptr;
-      Value* newValues = nullptr;
-      size_t* newFlags = nullptr;
-      try
-      {
-        newKeys = new Key[other.cap];
-        newValues = new Value[other.cap];
-        newFlags = new size_t[other.cap];
-        for (size_t i = 0; i < other.cap; ++i)
-        {
-          newFlags[i] = 0;
-        }
-        for (size_t i = 0; i < other.cap; ++i)
-        {
-          newFlags[i] = other.flags[i];
-          if (newFlags[i] == 1)
-          {
-            newKeys[i] = other.keys[i];
-            newValues[i] = other.values[i];
-          }
-        }
-      }
-      catch (...)
-      {
-        delete[] newKeys;
-        delete[] newValues;
-        delete[] newFlags;
-        throw;
-      }
+    Key* tempKeys = keys;
+    keys = other.keys;
+    other.keys = tempKeys;
 
-      delete[] keys;
-      delete[] values;
-      delete[] flags;
-      keys = newKeys;
-      values = newValues;
-      flags = newFlags;
-      cap = other.cap;
-      size = other.size;
-      hash = other.hash;
-      eq = other.eq;
-    }
+    Value* tempValues = values;
+    values = other.values;
+    other.values = tempValues;
+
+    size_t* tempFlags = flags;
+    flags = other.flags;
+    other.flags = tempFlags;
+
+    size_t tempSize = size;
+    size = other.size;
+    other.size = tempSize;
+
+    size_t tempCap = cap;
+    cap = other.cap;
+    other.cap = tempCap;
+
+    Hash tempHash = hash;
+    hash = other.hash;
+    other.hash = tempHash;
+
+    Equal tempEq = eq;
+    eq = other.eq;
+    other.eq = tempEq;
+
     return *this;
   }
 
@@ -434,7 +324,7 @@ namespace vishnevskiy
   {
     size_t curr = findByKey(k);
 
-    if (curr <= cap && !tombstone[curr])
+    if (curr < cap && flags[curr] == 1)
     {
       return values[curr];
     }
@@ -446,11 +336,23 @@ namespace vishnevskiy
   {
     size_t curr = findByKey(k);
 
-    if (curr <= cap && !tombstone[curr])
+    if (curr < cap && flags[curr] == 1)
     {
       return values[curr];
     }
     throw std::runtime_error("Key does not exist");
+  }
+
+  template <class Key, class Value, class Hash, class Equal>
+  tableIt<Key, Value, Hash, Equal> HashTable<Key, Value, Hash, Equal>::begin() const
+  {
+    return tableIt<Key, Value, Hash, Equal>(this);
+  }
+
+  template <class Key, class Value, class Hash, class Equal>
+  tableIt<Key, Value, Hash, Equal> HashTable<Key, Value, Hash, Equal>::end() const
+  {
+    return tableIt<Key, Value, Hash, Equal>(this, cap);
   }
 
   template <class Key, class Value, class Hash, class Equal>
@@ -460,49 +362,59 @@ namespace vishnevskiy
   {}
 
   template <class Key, class Value, class Hash, class Equal>
-  tableIt<Key, Value, Hash, Equal>::tableIt(const HashTable<Key, Value, Hash, Equal>* InitialTable):
-    table(InitialTable),
+  tableIt<Key, Value, Hash, Equal>::tableIt(const HashTable<Key, Value, Hash, Equal>* InitTable):
+    table(InitTable),
     curr(0)
   {
-    while (curr < table->getCapacity() && table->tombstone[curr])
+    while (curr < table->getCapacity() && table->flags[curr] != 1)
     {
       curr++;
     }
   }
 
   template <class Key, class Value, class Hash, class Equal>
-  void tableIt<Key, Value, Hash, Equal>::next()
-  {
+  tableIt<Key, Value, Hash, Equal>::tableIt(const HashTable<Key, Value, Hash, Equal>* InitialTable, size_t index):
+    table(InitialTable),
+    curr(index)
+  {}
+
+  template <class Key, class Value, class Hash, class Equal>
+  tableIt<Key, Value, Hash, Equal>& tableIt<Key, Value, Hash, Equal>::operator++()  {
     if (table && curr < table->cap)
     {
       curr++;
-      while (curr < table->cap && table->tombstone[curr])
+      while (curr < table->cap && table->flags[curr] != 1)
       {
         curr++;
       }
     }
+    return *this;
   }
 
   template <class Key, class Value, class Hash, class Equal>
-  bool tableIt<Key, Value, Hash, Equal>::hasNext()
+  tableIt<Key, Value, Hash, Equal> tableIt<Key, Value, Hash, Equal>::operator++(int)
   {
-    if (table && curr >= table->cap)
-    {
-      return false;
-    }
-    return true;
+    tableIt temp = *this;
+    ++(*this);
+    return temp;
   }
 
   template <class Key, class Value, class Hash, class Equal>
-  Value& tableIt<Key, Value, Hash, Equal>::val()
+  bool tableIt<Key, Value, Hash, Equal>::operator==(const tableIt& other) const
   {
-    return table->values[curr];
+    return table == other.table && curr == other.curr;
   }
 
   template <class Key, class Value, class Hash, class Equal>
-  Key& tableIt<Key, Value, Hash, Equal>::key()
+  bool tableIt<Key, Value, Hash, Equal>::operator!=(const tableIt& other) const
   {
-    return table->keys[curr];
+    return !(*this == other);
+  }
+
+  template <class Key, class Value, class Hash, class Equal>
+  std::pair<const Key&, Value&> tableIt<Key, Value, Hash, Equal>::operator*() const
+  {
+    return std::pair<const Key&, Value&>(table->keys[curr], table->values[curr]);
   }
 }
 
