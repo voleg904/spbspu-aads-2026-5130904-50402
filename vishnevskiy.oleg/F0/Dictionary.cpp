@@ -192,13 +192,11 @@ namespace vishnevskiy
   {
     if (exists(dictName))
     {
-      std::cout << "exists";
       throw std::runtime_error("Dictionary with this name already exists");
     }
     std::ifstream file(filename);
     if (!file.is_open())
     {
-      std::cout << "doesnt exist";
       throw std::runtime_error("File does not exist or cannot be opened");
     }
     dict_t* newDict = new dict_t(64, hashFunc, eqFunc);
@@ -211,7 +209,6 @@ namespace vishnevskiy
         if (line[0] != '(' || line[line.length() - 1] != ')')
         {
           delete newDict;
-          std::cout << "bad format";
           throw std::runtime_error("Invalid dictionary format");
         }
 
@@ -235,7 +232,6 @@ namespace vishnevskiy
         if (partCount != 3)
         {
           delete newDict;
-          std::cout << "bad format2";
           throw std::runtime_error("Invalid dictionary format");
         }
 
@@ -246,7 +242,6 @@ namespace vishnevskiy
         if (!isValid(part))
         {
           delete newDict;
-          std::cout << "bad part";
           throw std::runtime_error("Invalid part of speech");
         }
 
@@ -277,7 +272,6 @@ namespace vishnevskiy
         if (first)
         {
           delete newDict;
-          std::cout << "no translation";
           throw std::runtime_error("Word must have at least one translation");
         }
 
@@ -288,7 +282,6 @@ namespace vishnevskiy
         }
         catch (...)
         {
-          std::cout << "bad add";
           delete newDict;
           throw;
         }
@@ -303,7 +296,6 @@ namespace vishnevskiy
     catch (...)
     {
       delete newDict;
-      std::cout << "bad add2";
       throw;
     }
   }
