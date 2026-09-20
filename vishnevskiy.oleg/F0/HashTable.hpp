@@ -14,7 +14,8 @@ namespace vishnevskiy
     private:
       Key* keys;
       Value* values;
-      size_t* flags;
+      bool* tombstone;
+      size_t* psl;
       Hash hash;
       Equal eq;
       size_t size;
@@ -23,7 +24,7 @@ namespace vishnevskiy
       size_t getIndex(const Key& key);
       size_t probe(size_t ind);
       size_t findByKey(const Key& key);
-      size_t findFree(const Key& key);
+      size_t findFree(const Key& key, size_t& resPsl);
       void createEls(size_t capacity);
 
     public:

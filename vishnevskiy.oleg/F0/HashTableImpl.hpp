@@ -24,52 +24,73 @@ namespace vishnevskiy
   size_t HashTable<Key, Value, Hash, Equal>::findByKey(const Key& key)
   {
     size_t ind = getIndex(key);
+    size_t currPsl = 0;
     for (size_t i = 0; i < cap; ++i)
     {
-      if (flags[ind] == 0)
+      if (tombstone[ind] && psl[ind] == 0)
       {
         return cap+1;
       }
-      if (flags[ind] == 1 && eq(keys[ind], key))
+      if (!tombstone[ind] && eq(keys[ind], key))
       {
         return ind;
       }
+      if (psl[ind] < currPsl)
+      {
+        return cap+1;
+      }
       ind = probe(ind);
+      ++currPsl;
     }
     return cap+1;
   }
 
   template <class Key, class Value, class Hash, class Equal>
-  size_t HashTable<Key, Value, Hash, Equal>::findFree(const Key& key)
+  size_t HashTable<Key, Value, Hash, Equal>::findFree(const Key& key, size_t& resPsl)
   {
     size_t ind = getIndex(key);
+    size_t currPsl = 0;
     size_t firstTombstone = cap;
     bool hasTombstone = false;
 
     for (size_t i = 0; i < cap; ++i)
     {
-      size_t f = flags[ind];
-      if (f == 0)
+      if (tombstone[ind] && psl[ind] == 0)
       {
         if (hasTombstone)
         {
+          resPsl = psl[firstTombstone];
           return firstTombstone;
         }
+        resPsl = currPsl;
         return ind;
       }
-      else if (f == 2 && !hasTombstone)
+      if (tombstone[ind] && !hasTombstone)
       {
         firstTombstone = ind;
         hasTombstone = true;
       }
-      else if (f == 1 && eq(keys[ind], key))
+      if (!tombstone[ind] && eq(keys[ind], key))
       {
+        resPsl = psl[ind];
+        return ind;
+      }
+      if (!tombstone[ind] && psl[ind] < currPsl)
+      {
+        if (hasTombstone)
+        {
+          resPsl = psl[firstTombstone];
+          return firstTombstone;
+        }
+        resPsl = currPsl;
         return ind;
       }
       ind = probe(ind);
+      ++currPsl;
     }
     if (hasTombstone)
     {
+      resPsl = psl[firstTombstone];
       return firstTombstone;
     }
     return cap+1;
@@ -78,22 +99,49 @@ namespace vishnevskiy
   template <class Key, class Value, class Hash, class Equal>
   void HashTable<Key, Value, Hash, Equal>::add(const Key& k, const Value& v)
   {
-    size_t curr = findFree(k);
+    size_t currPsl = 0;
+    size_t curr = findFree(k, currPsl);
 
     if (curr > cap)
     {
       throw std::runtime_error("Table is full");
     }
-    if (flags[curr] == 1 && eq(keys[curr], k))
+    if (!tombstone[curr] == 1 && eq(keys[curr], k))
     {
       values[curr] = v;
+      return;
     }
-    else
+    Key currKey = k;
+    Value currVal = v;
+
+    for (size_t i = 0; i < cap; ++i)
     {
-      keys[curr] = k;
-      values[curr] = v;
-      flags[curr] = 1;
-      size++;
+      if (tombstone[curr] || psl[curr] < currPsl)
+      {
+        if (tombstone[curr])
+        {
+          keys[curr] = currKey;
+          values[curr] = currVal;
+          tombstone[curr] = false;
+          psl[curr] = currPsl;
+          ++size;
+          return;
+        }
+
+        Key tmpKey = currKey;
+        currKey = keys[curr];
+        keys[curr] = tmpKey;
+
+        Value tmpVal = currVal;
+        currVal = values[curr];
+        values[curr] = tmpVal;
+
+        size_t tmpPsl = currPsl;
+        currPsl = psl[curr];
+        psl[curr] = tmpPsl;
+      }
+      curr = probe(curr);
+      ++currPsl;
     }
   }
 
@@ -102,10 +150,10 @@ namespace vishnevskiy
   {
     size_t curr = findByKey(k);
 
-    if (curr <= cap && flags[curr] == 1)
+    if (curr <= cap && !tombstone[curr])
     {
       Value result = values[curr];
-      flags[curr] = 2;
+      tombstone[curr] = true;
       size--;
       return result;
     }
@@ -128,35 +176,41 @@ namespace vishnevskiy
 
     Key* keysCopy = keys;
     Value* valuesCopy = values;
-    size_t* flagsCopy = flags;
+    bool* tombCopy = tombstone;
+    size_t* pslCopy = psl;
     size_t capCopy = cap;
-    keys = new Key[slots];
-    try
-    {
-      values = new Value[slots];
-      flags = new size_t[slots];
-    }
-    catch (const std::bad_alloc& e)
-    {
-      throw e;
-    }
+
+    keys = nullptr;
+    values = nullptr;
+    tombstone = nullptr;
+    psl = nullptr;
     size = 0;
     cap = slots;
+    createEls(cap);
 
-    for (size_t i = 0; i < cap; ++i)
+    try
     {
-      flags[i] = 0;
-    }
-    for (size_t i = 0; i < capCopy; ++i)
-    {
-      if (flagsCopy[i] == 1)
+      for (size_t i = 0; i < capCopy; ++i)
       {
-        add(keysCopy[i], valuesCopy[i]);
+        if (!tombCopy[i])
+        {
+          add(keysCopy[i], valuesCopy[i]);
+        }
       }
     }
+    catch (...)
+    {
+      delete[] keysCopy;
+      delete[] valuesCopy;
+      delete[] tombCopy;
+      delete[] pslCopy;
+      throw;
+    }
+
     delete[] keysCopy;
     delete[] valuesCopy;
-    delete[] flagsCopy;
+    delete[] tombCopy;
+    delete[] pslCopy;
   }
 
   template <class Key, class Value, class Hash, class Equal>
@@ -164,36 +218,42 @@ namespace vishnevskiy
   {
     Key* keyPtr = nullptr;
     Value* valPtr = nullptr;
-    size_t* flagPtr = nullptr;
+    bool* tombPtr = nullptr;
+    size_t* pslPtr = nullptr;
 
     try
     {
       keyPtr = new Key[capacity];
       valPtr = new Value[capacity];
-      flagPtr = new size_t[capacity];
+      tombPtr = new bool[capacity];
+      pslPtr = new size_t[capacity];
     }
     catch (const std::bad_alloc& e)
     {
       delete[] keyPtr;
       delete[] valPtr;
-      delete[] flagPtr;
+      delete[] tombPtr;
+      delete[] pslPtr;
       throw e;
     }
 
     for (size_t i = 0; i < capacity; ++i)
     {
-      flagPtr[i] = 0;
+      tombPtr[i] = true;
+      pslPtr[i] = 0;
     }
     keys = keyPtr;
     values = valPtr;
-    flags = flagPtr;
+    tombstone = tombPtr;
+    psl = pslPtr;
   }
 
   template <class Key, class Value, class Hash, class Equal>
   HashTable<Key, Value, Hash, Equal>::HashTable(size_t capacity, Hash hash_f, Equal eq_f):
     keys(nullptr),
     values(nullptr),
-    flags(nullptr),
+    tombstone(nullptr),
+    psl(nullptr),
     hash(hash_f),
     eq(eq_f),
     size(0),
@@ -207,7 +267,8 @@ namespace vishnevskiy
   {
     delete[] keys;
     delete[] values;
-    delete[] flags;
+    delete[] tombstone;
+    delete[] psl;
   }
 
   template <class Key, class Value, class Hash, class Equal>
@@ -215,6 +276,8 @@ namespace vishnevskiy
     keys(nullptr),
     values(nullptr),
     flags(nullptr),
+    tombstone(nullptr),
+    psl(nullptr),
     hash(other.hash),
     eq(other.eq),
     size(other.size),
@@ -226,13 +289,74 @@ namespace vishnevskiy
     {
       for (size_t i = 0; i < cap; ++i)
       {
-        flags[i] = other.flags[i];
-        if (flags[i] == 1)
+        tombstone[i] = other.tombstone[i];
+        psl[i] = other.psl[i];
+        if (!tombstone[i])
         {
           keys[i] = other.keys[i];
           values[i] = other.values[i];
         }
       }
+    }
+    catch (...)
+    {
+      delete[] keys;
+      delete[] values;
+      delete[] tombstone;
+      delete[] psl;
+      throw;
+    }
+  }
+
+    try
+    {
+      Key* newKeys = nullptr;
+      Value* newValues = nullptr;
+      bool* newTomb = nullptr;
+      size_t* newPsl = nullptr;
+      try
+      {
+        newKeys = new Key[other.cap];
+        newValues = new Value[other.cap];
+        newTomb = new bool[other.cap];
+        newPsl = new size_t[other.cap];
+        for (size_t i = 0; i < other.cap; ++i)
+        {
+          newTomb[i] = true;
+          newPsl[i] = 0;
+        }
+        for (size_t i = 0; i < other.cap; ++i)
+        {
+          newTomb[i] = other.tombstone[i];
+          newPsl[i] = other.psl[i];
+          if (!newTomb[i])
+          {
+            newKeys[i] = other.keys[i];
+            newValues[i] = other.values[i];
+          }
+        }
+      }
+      catch (...)
+      {
+        delete[] newKeys;
+        delete[] newValues;
+        delete[] newTomb;
+        delete[] newPsl;
+        throw;
+      }
+
+      delete[] keys;
+      delete[] values;
+      delete[] tombstone;
+      delete[] psl;
+      keys = newKeys;
+      values = newValues;
+      tombstone = newTomb;
+      psl = newPsl;
+      cap = other.cap;
+      size = other.size;
+      hash = other.hash;
+      eq = other.eq;
     }
     catch (...)
     {
@@ -310,7 +434,7 @@ namespace vishnevskiy
   {
     size_t curr = findByKey(k);
 
-    if (curr <= cap && flags[curr] == 1)
+    if (curr <= cap && !tombstone[curr])
     {
       return values[curr];
     }
@@ -322,7 +446,7 @@ namespace vishnevskiy
   {
     size_t curr = findByKey(k);
 
-    if (curr <= cap && flags[curr] == 1)
+    if (curr <= cap && !tombstone[curr])
     {
       return values[curr];
     }
@@ -340,7 +464,7 @@ namespace vishnevskiy
     table(InitialTable),
     curr(0)
   {
-    while (curr < table->getCapacity() && table->flags[curr] != 1)
+    while (curr < table->getCapacity() && table->tombstone[curr])
     {
       curr++;
     }
@@ -352,7 +476,7 @@ namespace vishnevskiy
     if (table && curr < table->cap)
     {
       curr++;
-      while (curr < table->cap && table->flags[curr] != 1)
+      while (curr < table->cap && table->tombstone[curr])
       {
         curr++;
       }
